@@ -103,6 +103,12 @@
             gap: 8px; /* 减小间距 */
             margin-bottom: 15px;
             justify-content: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: var(--card-bg);
+            padding: 15px 0 5px;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
         }
         
         .api-type-btn {
@@ -1483,6 +1489,94 @@
         .dark-mode * {
             scrollbar-color: rgba(136, 192, 208, 0.3) transparent;
         }
+        
+        /* 设置面板样式 */
+        .settings-panel {
+            margin: 15px 0;
+            border-radius: 10px;
+            background-color: var(--card-bg);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background-color: #F0E3E9;
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: 8px;
+        }
+        
+        .dark-mode .settings-header {
+            background-color: #3B4252;
+        }
+        
+        .settings-header:hover {
+            background-color: #E8D0D8;
+        }
+        
+        .dark-mode .settings-header:hover {
+            background-color: #4C566A;
+        }
+        
+        .settings-title {
+            font-weight: 500;
+            color: var(--primary-dark);
+        }
+        
+        .dark-mode .settings-title {
+            color: #88C0D0;
+        }
+        
+        .settings-arrow {
+            transition: transform 0.3s ease;
+        }
+        
+        .settings-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+        
+        .settings-content.expanded {
+            padding: 15px;
+            max-height: 500px;
+        }
+        
+        .settings-section {
+            margin-bottom: 15px;
+        }
+        
+        .settings-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .settings-info-btn {
+            padding: 5px 15px;
+            background-color: var(--primary-light);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .settings-info-btn:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .settings-help {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -1524,168 +1618,93 @@
                         <button class="api-type-btn" data-api-type="gemini">Gemini</button>
                         <button class="api-type-btn" data-api-type="deepseek">Deepseek</button>
                         <button class="api-type-btn" data-api-type="xai">XAI (Grok)</button>
-                        <button class="api-type-btn" data-api-type="openai_like">自定义</button>
+                        <button class="api-type-btn" data-api-type="openai_like">通用API</button>
                     </div>
                     
-                    <div class="toggle-container">
-                        <span class="toggle-label">使用浏览器端验证:</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="client-side-toggle" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                        <span class="help-text">推荐启用，解决网络连接问题</span>
-                    </div>
-                    
-                    <!-- 自动检测模型切换 -->
-                    <div class="toggle-container auto-detect-container">
-                        <span class="toggle-label">自动检测可用模型:</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="auto-detect-toggle" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                        <span class="help-text">使用首个有效API密钥获取模型列表</span>
-                    </div>
-                    
-                    <!-- 批量大小设置 -->
-                    <div class="batch-size-container">
-                        <div class="batch-size-header">
-                            <span class="batch-size-label">每批验证数量:</span>
-                            <button class="batch-size-info" title="影响验证速度和服务器负载，数值越大速度越快但可能导致API限制" id="batch-info-btn">ⓘ</button>
+                    <!-- 设置菜单折叠面板 -->
+                    <div class="settings-panel">
+                        <div class="settings-header" id="settings-toggle">
+                            <span class="settings-title">验证设置</span>
+                            <span class="settings-arrow">▼</span>
                         </div>
-                        <div class="batch-size-controls">
-                            <input 
-                                type="range" 
-                                id="batch-size-slider" 
-                                min="1" 
-                                max="50" 
-                                value="10" 
-                                class="batch-size-slider"
-                            >
-                            <input 
-                                type="number" 
-                                id="batch-size-input" 
-                                min="1" 
-                                max="50" 
-                                value="10" 
-                                class="batch-size-input"
-                            >
-                        </div>
-                        <div class="batch-size-marks">
-                            <span>慢(1)</span>
-                            <span>平衡(10)</span>
-                            <span>快(50)</span>
-                        </div>
-                    </div>
-                    
-                    <!-- 并发验证设置 -->
-                    <div class="concurrency-container">
-                        <div class="concurrency-header">
-                            <span class="concurrency-label">并发验证:</span>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="concurrency-toggle" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                            <button class="batch-size-info" title="并发同时处理多个批次，大大提高速度但可能导致API限制" id="concurrency-info-btn">ⓘ</button>
-                        </div>
-                        <div class="concurrency-controls" id="concurrency-controls">
-                            <span class="concurrency-value-label">并发数量:</span>
-                            <input 
-                                type="number" 
-                                id="concurrency-input" 
-                                min="1" 
-                                max="10" 
-                                value="3" 
-                                class="concurrency-input"
-                            >
-                            <span class="help-text">并发数过高可能导致API提供商临时封禁</span>
-                        </div>
-                    </div>
-                    
-                    <div class="api-settings" id="openai-settings">
-                        <p><strong>验证 OpenAI API 密钥</strong> - 格式: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
-                        <div class="model-select-container">
-                            <label for="openai-model">选择模型:</label>
-                            <select id="openai-model" class="model-select">
-                                <option value="gpt-4o-2024-05-13">GPT-4o</option>
-                                <option value="gpt-4o-mini">GPT-4o-mini</option>
-                                <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                                <option value="gpt-4">GPT-4</option>
-                                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                                <option value="gpt-o1-preview">GPT-o1 Preview</option>
-                                <option value="gpt-o1-mini-preview">GPT-o1 Mini Preview</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="api-settings" id="claude-settings" style="display: none;">
-                        <p><strong>验证 Claude API 密钥</strong></p>
-                        <div class="model-select-container">
-                            <label for="claude-model">选择模型:</label>
-                            <select id="claude-model" class="model-select">
-                                <option value="claude-opus-4-20250514">Claude 4 Opus</option>
-                                <option value="claude-sonnet-4-20250514">Claude 4 Sonnet</option>
-                                <option value="claude-3-7-sonnet-20250219">Claude 3.7 Sonnet</option>
-                                <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</option>
-                                <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku</option>
-                                <option value="claude-3-opus-20240229">Claude 3 Opus</option>
-                                <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
-                                <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="api-settings" id="gemini-settings" style="display: none;">
-                        <p><strong>验证 Gemini API 密钥</strong></p>
-                        <div class="model-select-container">
-                            <label for="gemini-model">选择模型:</label>
-                            <select id="gemini-model" class="model-select">
-                                <option value="gemini-2.5-pro-preview-05-06">Gemini 2.5 Pro</option>
-                                <option value="gemini-2.5-flash-preview-05-20">Gemini 2.5 Flash</option>
-                                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                                <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash-Lite</option>
-                                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="api-settings" id="deepseek-settings" style="display: none;">
-                        <p><strong>验证 Deepseek API 密钥</strong></p>
-                        <div class="model-select-container">
-                            <label for="deepseek-model">选择模型:</label>
-                            <select id="deepseek-model" class="model-select">
-                                <option value="deepseek-v3-0324">DeepSeek V3</option>
-                                <option value="deepseek-v2.5-1210">DeepSeek V2.5</option>
-                                <option value="deepseek-reasoner">DeepSeek Reasoner</option>
-                                <option value="deepseek-chat">DeepSeek Chat</option>
-                                <option value="deepseek-coder">DeepSeek Coder</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="api-settings" id="xai-settings" style="display: none;">
-                        <p><strong>验证 XAI (Grok) API 密钥</strong></p>
-                        <div class="model-select-container">
-                            <label for="xai-model">选择模型:</label>
-                            <select id="xai-model" class="model-select">
-                                <option value="grok-3">Grok-3</option>
-                                <option value="grok-2">Grok-2</option>
-                                <option value="grok-1.5">Grok-1.5</option>
-                                <option value="grok-1">Grok-1</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="api-settings" id="openai_like-settings" style="display: none;">
-                        <p><strong>验证类 OpenAI API 密钥</strong> - 如硅基流动、火山引擎等兼容 OpenAI 的平台</p>
-                        <div class="custom-settings" style="display: block;">
-                            <div class="input-group">
-                                <label for="custom-api-url">API 基础 URL (必须以 /v1 结尾):</label>
-                                <input type="text" id="custom-api-url" class="custom-input" placeholder="例如: https://api.example.com/v1" />
+                        
+                        <div class="settings-content" id="settings-content">
+                            <!-- 验证方式设置 -->
+                            <div class="settings-section">
+                                <div class="toggle-container">
+                                    <span class="toggle-label">使用浏览器端验证:</span>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="client-side-toggle" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="toggle-container auto-detect-container">
+                                    <span class="toggle-label">自动检测可用模型:</span>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="auto-detect-toggle" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
                             </div>
-                            <div class="input-group">
-                                <label for="custom-model-name">模型名称:</label>
-                                <input type="text" id="custom-model-name" class="custom-input" placeholder="例如: llama-7b" />
+                            
+                            <!-- 并发设置 -->
+                            <div class="settings-section">
+                                <div class="concurrency-container">
+                                    <div class="concurrency-header">
+                                        <span class="concurrency-label">并发验证:</span>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="concurrency-toggle" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="concurrency-controls" id="concurrency-controls">
+                                        <span class="concurrency-value-label">并发数量:</span>
+                                        <input 
+                                            type="number" 
+                                            id="concurrency-input" 
+                                            min="1" 
+                                            max="10" 
+                                            value="3" 
+                                            class="concurrency-input"
+                                        >
+                                    </div>
+                                </div>
+                                
+                                <div class="batch-size-container">
+                                    <div class="batch-size-header">
+                                        <span class="batch-size-label">每批验证数量:</span>
+                                    </div>
+                                    <div class="batch-size-controls">
+                                        <input 
+                                            type="range" 
+                                            id="batch-size-slider" 
+                                            min="1" 
+                                            max="50" 
+                                            value="10" 
+                                            class="batch-size-slider"
+                                        >
+                                        <input 
+                                            type="number" 
+                                            id="batch-size-input" 
+                                            min="1" 
+                                            max="50" 
+                                            value="10" 
+                                            class="batch-size-input"
+                                        >
+                                    </div>
+                                    <div class="batch-size-marks">
+                                        <span>慢(1)</span>
+                                        <span>平衡(10)</span>
+                                        <span>快(50)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 设置说明 -->
+                            <div class="settings-help">
+                                <button class="settings-info-btn" id="settings-info-btn">ⓘ 参数说明</button>
+                                <span class="help-text">设置将自动保存</span>
                             </div>
                         </div>
                     </div>
@@ -1914,6 +1933,9 @@
                             detectAvailableModels(keys, currentApiType);
                         }
                     }
+                    
+                    // 保存用户设置
+                    saveUserSettings();
                 });
             });
             
@@ -2062,23 +2084,11 @@
                 concurrencyCount = value;
             });
             
-            // 初始化并发控制显示状态
-            concurrencyControls.style.display = concurrencyEnabled ? 'flex' : 'none';
-            
-            // 批量大小信息按钮
-            document.getElementById('batch-info-btn').addEventListener('click', function() {
-                showBatchConcurrencyInfo();
-            });
-            
-            // 并发信息按钮
-            document.getElementById('concurrency-info-btn').addEventListener('click', function() {
-                showBatchConcurrencyInfo();
-            });
-            
             // 自动检测模型切换
             document.getElementById('auto-detect-toggle').addEventListener('change', function() {
                 autoDetectModels = this.checked;
             });
+            
             
             // 修改各API类型模型选择器
             document.querySelectorAll('.model-select').forEach(select => {
@@ -2098,6 +2108,62 @@
                 failedOption.style.display = 'none';
                 select.appendChild(failedOption);
             });
+            
+            // 初始化节点信息显示状态
+            concurrencyControls.style.display = concurrencyEnabled ? 'flex' : 'none';
+            
+            // 设置面板的折叠展开
+            const settingsToggle = document.getElementById('settings-toggle');
+            const settingsContent = document.getElementById('settings-content');
+            const settingsArrow = settingsToggle.querySelector('.settings-arrow');
+            
+            // 加载设置面板状态
+            const settingsPanelExpanded = localStorage.getItem('settingsPanelExpanded') === 'true';
+            
+            if (settingsPanelExpanded) {
+                settingsContent.classList.add('expanded');
+                settingsArrow.style.transform = 'rotate(180deg)';
+            }
+            
+            settingsToggle.addEventListener('click', function() {
+                const isExpanded = settingsContent.classList.toggle('expanded');
+                settingsArrow.style.transform = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+                localStorage.setItem('settingsPanelExpanded', isExpanded.toString());
+            });
+            
+            // 设置说明按钮
+            document.getElementById('settings-info-btn').addEventListener('click', function() {
+                showBatchConcurrencyInfo();
+            });
+            
+            // 加载用户之前的设置
+            loadUserSettings();
+            
+            // 设置保存用户设置的事件监听器
+            setupSettingsSaving();
+            
+            // 设置自定义API模型选择器逻辑
+            const openaiLikeModelSelect = document.getElementById('openai_like-model');
+            const customModelContainer = document.getElementById('custom-model-container');
+            
+            openaiLikeModelSelect.addEventListener('change', function() {
+                // 如果选择的是自定义选项，显示输入框
+                if (this.value === 'custom') {
+                    customModelContainer.style.display = 'block';
+                } else {
+                    customModelContainer.style.display = 'none';
+                }
+            });
+            
+            // 初始化自定义模型输入框显示状态
+            if (openaiLikeModelSelect.value === 'custom') {
+                customModelContainer.style.display = 'block';
+            } else {
+                customModelContainer.style.display = 'none';
+            }
+            
+            // 初始获取节点信息
+            fetchNodeInfo();
         });
         
         // 初始化空结果状态
@@ -2204,11 +2270,58 @@
                 const geoResponse = await fetch(`https://ipapi.co/${ip}/json/`);
                 const geoData = await geoResponse.json();
                 
-                // 获取IP数据可信度分数
-                let ipTrustScore = Math.floor(Math.random() * 100); // 默认随机分数（实际应使用真实API）
+                // 计算固定的IP数据可信度分数 (基于IP和ASN等特征)
+                // 使用IP和ASN等固定信息作为种子生成一个固定的分数，而不是每次都随机
+                const ipComponents = ip.split('.').map(Number);
+                let ipTrustScore = 70; // 基础分数
+                
+                // 基于IP特征调整分数
+                if (geoData.asn) {
+                    // 使用ASN作为固定信息源
+                    const asnNumber = parseInt(geoData.asn.replace(/\D/g, '')) || 0;
+                    // 使用ASN微调分数，但保持在0-100范围内
+                    const asnFactor = (asnNumber % 30) - 15; // -15到15之间
+                    ipTrustScore = Math.max(0, Math.min(100, ipTrustScore + asnFactor));
+                }
+                
+                // 基于地理位置调整分数
+                if (geoData.country_code) {
+                    // 高可信区域
+                    if (['US', 'CA', 'GB', 'AU', 'NZ', 'DE', 'FR', 'JP', 'KR', 'SG'].includes(geoData.country_code)) {
+                        ipTrustScore += 15;
+                    }
+                    // 中等可信区域
+                    else if (['BR', 'IN', 'ZA', 'MX', 'AR'].includes(geoData.country_code)) {
+                        ipTrustScore += 0;
+                    }
+                    // 低可信区域
+                    else if (['CN', 'RU', 'IR', 'KP', 'SY', 'CU'].includes(geoData.country_code)) {
+                        ipTrustScore -= 15;
+                    }
+                }
+                
+                // 基于ISP调整分数
+                if (geoData.org) {
+                    const org = geoData.org.toLowerCase();
+                    // 大型可信ISP
+                    if (org.includes('amazon') || org.includes('google') || org.includes('microsoft') || 
+                        org.includes('cloudflare') || org.includes('akamai')) {
+                        ipTrustScore += 10;
+                    }
+                    // 可疑ISP关键词
+                    if (org.includes('proxy') || org.includes('vpn') || org.includes('anon') || 
+                        org.includes('hosting') || org.includes('data center')) {
+                        ipTrustScore -= 10;
+                    }
+                }
+                
+                // 确保分数在0-100范围内
+                ipTrustScore = Math.max(0, Math.min(100, ipTrustScore));
+                
+                // 设置分数颜色
                 let ipScoreColor = ipTrustScore < 30 ? '#EF5350' : (ipTrustScore < 60 ? '#FFA726' : '#66BB6A');
                 
-                // 尝试获取真实ipdata可信度分数（需要替换为实际的API密钥）
+                /* 不再使用ipdata API - 完全本地计算IP信任分数
                 try {
                     // 注意：此处需要替换为您的ipdata API密钥
                     const ipDataApiKey = 'YOUR_IPDATA_API_KEY'; // 如果需要使用真实ipdata API，请替换此处
@@ -2226,6 +2339,7 @@
                 } catch (ipDataError) {
                     console.warn("无法获取ipdata威胁分数:", ipDataError);
                 }
+                */
                 
                 // 获取浏览器信息
                 const browserInfo = {
@@ -2431,7 +2545,20 @@
             if (currentApiType !== 'openai_like') return null;
             
             const customApiUrl = document.getElementById('custom-api-url').value.trim();
-            const customModelName = document.getElementById('custom-model-name').value.trim();
+            let customModelName = '';
+            
+            // 获取模型名称 - 从选择器或输入框
+            const modelSelect = document.getElementById('openai_like-model');
+            if (modelSelect.value === 'custom') {
+                // 如果选择的是自定义选项，则从输入框获取
+                customModelName = document.getElementById('custom-model-name').value.trim();
+            } else if (modelSelect.value !== 'loading' && modelSelect.value !== 'failed') {
+                // 如果选择的是预设或自动检测的模型
+                customModelName = modelSelect.value;
+            } else {
+                // 默认从输入框获取
+                customModelName = document.getElementById('custom-model-name').value.trim();
+            }
             
             if (!customApiUrl || !customModelName) {
                 return null;
@@ -3416,361 +3543,3 @@
 • 小批量(1-10): 速度较慢但更稳定，适合网络不稳定情况
 • 中等值(10-25): 平衡的速度和稳定性，适合大多数情况
 • 大批量(25-50): 速度快但可能触发API限制
-
-【并发验证】是指同时处理多少批密钥:
-• 并发数小(1-3): 稳定性高，适合长期运行
-• 并发数中(3-5): 平衡速度和稳定性
-• 并发数大(5-10): 极快但可能导致API提供商暂时封禁
-
-【如何选择最佳参数】:
-• 少量密钥(<100): 批量=10, 并发=3
-• 中量密钥(100-1000): 批量=20, 并发=3
-• 大量密钥(>1000): 批量=10, 并发=5
-• 极速验证: 批量=30, 并发=5 (风险较高)
-• 稳定模式: 批量=5, 并发=1 (最慢但最稳定)
-
-注意: 过高的设置可能导致API提供商临时限制或封禁您的IP地址，请谨慎使用。`);
-        }
-        
-        // 自动检测可用模型
-        async function detectAvailableModels(keys, apiType) {
-            if (!keys || keys.length === 0 || !autoDetectModels) return false;
-            if (modelDetectionInProgress) return false;
-            
-            modelDetectionInProgress = true;
-            
-            // 显示加载状态
-            const selectElement = document.getElementById(`${apiType}-model`);
-            if (selectElement) {
-                // 隐藏所有常规选项
-                Array.from(selectElement.options).forEach(opt => {
-                    if (opt.value !== 'loading' && opt.value !== 'failed') {
-                        opt.style.display = 'none';
-                    }
-                });
-                
-                // 显示加载选项
-                Array.from(selectElement.options).find(opt => opt.value === 'loading').style.display = '';
-                selectElement.value = 'loading';
-            }
-            
-            try {
-                // 获取API配置
-                const config = API_ENDPOINTS[apiType];
-                if (!config || !config.models) {
-                    throw new Error('无效的API配置');
-                }
-                
-                // 尝试验证第一个密钥
-                let validKey = null;
-                let keyIndex = 0;
-                
-                // 尝试最多5个密钥
-                while (!validKey && keyIndex < Math.min(5, keys.length)) {
-                    const key = keys[keyIndex];
-                    try {
-                        // 尝试使用密钥获取模型列表
-                        const isValid = await testApiKey(key, apiType);
-                        if (isValid) {
-                            validKey = key;
-                            break;
-                        }
-                    } catch (e) {
-                        // 继续尝试下一个密钥
-                    }
-                    keyIndex++;
-                }
-                
-                if (!validKey) {
-                    throw new Error('未找到有效的API密钥来获取模型');
-                }
-                
-                // 使用有效的密钥获取模型列表
-                const models = await fetchModelList(validKey, apiType);
-                
-                if (!models || models.length === 0) {
-                    throw new Error('获取的模型列表为空');
-                }
-                
-                // 存储可用模型
-                availableModels[apiType] = models;
-                
-                // 更新选择器
-                if (selectElement) {
-                    // 清空现有选项（保留加载和失败选项）
-                    Array.from(selectElement.options).forEach(opt => {
-                        if (opt.value !== 'loading' && opt.value !== 'failed') {
-                            selectElement.removeChild(opt);
-                        }
-                    });
-                    
-                    // 隐藏加载选项
-                    Array.from(selectElement.options).find(opt => opt.value === 'loading').style.display = 'none';
-                    Array.from(selectElement.options).find(opt => opt.value === 'failed').style.display = 'none';
-                    
-                    // 添加新的模型选项
-                    models.forEach(model => {
-                        const option = document.createElement('option');
-                        option.value = model.id;
-                        option.textContent = model.name || model.id;
-                        // 如果存在支持标签，则添加到选项文本中
-                        if (model.supported) {
-                            option.textContent += ' (推荐)';
-                        }
-                        selectElement.appendChild(option);
-                    });
-                    
-                    // 选择第一个模型
-                    if (models.length > 0) {
-                        // 优先选择推荐/支持的模型
-                        const recommendedModel = models.find(m => m.supported);
-                        if (recommendedModel) {
-                            selectElement.value = recommendedModel.id;
-                        } else {
-                            selectElement.value = models[0].id;
-                        }
-                    }
-                }
-                
-                modelDetectionInProgress = false;
-                return true;
-            } catch (error) {
-                console.error(`检测模型失败(${apiType}):`, error);
-                
-                // 显示失败状态
-                if (selectElement) {
-                    // 显示失败选项
-                    Array.from(selectElement.options).find(opt => opt.value === 'loading').style.display = 'none';
-                    Array.from(selectElement.options).find(opt => opt.value === 'failed').style.display = '';
-                    
-                    // 显示所有原始选项
-                    Array.from(selectElement.options).forEach(opt => {
-                        if (opt.value !== 'loading' && opt.value !== 'failed') {
-                            opt.style.display = '';
-                        }
-                    });
-                    
-                    // 选择第一个非加载/失败选项
-                    const firstRegularOption = Array.from(selectElement.options).find(opt => 
-                        opt.value !== 'loading' && opt.value !== 'failed'
-                    );
-                    if (firstRegularOption) {
-                        selectElement.value = firstRegularOption.value;
-                    }
-                }
-                
-                modelDetectionInProgress = false;
-                return false;
-            }
-        }
-        
-        // 测试API密钥是否有效
-        async function testApiKey(key, apiType) {
-            const config = API_ENDPOINTS[apiType];
-            if (!config || !config.models) {
-                return false;
-            }
-            
-            let headers = {};
-            
-            // 设置不同API的头信息
-            switch (apiType) {
-                case 'openai':
-                case 'openai_like':
-                case 'deepseek':
-                case 'xai':
-                    headers = {
-                        'Authorization': `Bearer ${key}`,
-                        'Content-Type': 'application/json'
-                    };
-                    break;
-                case 'claude':
-                    headers = {
-                        'x-api-key': key,
-                        'anthropic-version': '2023-06-01',
-                        'Content-Type': 'application/json'
-                    };
-                    break;
-                case 'gemini':
-                    // 不需要头部，使用URL参数
-                    break;
-                default:
-                    return false;
-            }
-            
-            try {
-                let url = config.models;
-                // 对于Gemini，将密钥作为URL参数
-                if (apiType === 'gemini') {
-                    url = `${config.models}?key=${key}`;
-                }
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: headers,
-                    signal: AbortSignal.timeout(10000) // 10秒超时
-                });
-                
-                return response.ok;
-            } catch (error) {
-                return false;
-            }
-        }
-        
-        // 获取模型列表
-        async function fetchModelList(key, apiType) {
-            const config = API_ENDPOINTS[apiType];
-            if (!config || !config.models) {
-                throw new Error('无效的API配置');
-            }
-            
-            let headers = {};
-            
-            // 设置不同API的头信息
-            switch (apiType) {
-                case 'openai':
-                case 'openai_like':
-                case 'deepseek':
-                case 'xai':
-                    headers = {
-                        'Authorization': `Bearer ${key}`,
-                        'Content-Type': 'application/json'
-                    };
-                    break;
-                case 'claude':
-                    headers = {
-                        'x-api-key': key,
-                        'anthropic-version': '2023-06-01',
-                        'Content-Type': 'application/json'
-                    };
-                    break;
-                case 'gemini':
-                    // 不需要头部，使用URL参数
-                    break;
-                default:
-                    throw new Error('不支持的API类型');
-            }
-            
-            try {
-                let url = config.models;
-                // 对于Gemini，将密钥作为URL参数
-                if (apiType === 'gemini') {
-                    url = `${config.models}?key=${key}`;
-                }
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: headers,
-                    signal: AbortSignal.timeout(10000) // 10秒超时
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP错误: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                let models = [];
-                
-                // 不同API返回的模型数据结构不同，需要分别处理
-                switch (apiType) {
-                    case 'openai':
-                    case 'openai_like':
-                    case 'deepseek':
-                    case 'xai':
-                        models = data.data.map(model => ({
-                            id: model.id,
-                            name: model.id, // 使用id作为名称
-                            supported: isSupportedModel(model.id, apiType)
-                        }));
-                        break;
-                    case 'claude':
-                        models = data.models.map(model => ({
-                            id: model.id,
-                            name: model.id,
-                            supported: isSupportedModel(model.id, apiType)
-                        }));
-                        break;
-                    case 'gemini':
-                        models = data.models.map(model => ({
-                            id: model.name.split('/').pop(), // 从路径中提取模型名称
-                            name: model.name.split('/').pop(),
-                            supported: isSupportedModel(model.name, apiType)
-                        }));
-                        break;
-                }
-                
-                // 按照字母顺序排序，但将支持的模型排在前面
-                models.sort((a, b) => {
-                    if (a.supported && !b.supported) return -1;
-                    if (!a.supported && b.supported) return 1;
-                    return a.name.localeCompare(b.name);
-                });
-                
-                return models;
-            } catch (error) {
-                console.error(`获取模型列表失败(${apiType}):`, error);
-                throw error;
-            }
-        }
-        
-        // 检查是否为支持的模型
-        function isSupportedModel(modelId, apiType) {
-            // 定义每种API类型支持的模型列表
-            const supportedModels = {
-                openai: [
-                    'gpt-4o', 'gpt-4o-2024-05-13', 'gpt-4o-mini', 
-                    'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo',
-                    'gpt-o1-preview', 'gpt-o1-mini-preview'
-                ],
-                claude: [
-                    'claude-opus-4-20250514', 'claude-sonnet-4-20250514',
-                    'claude-3-7-sonnet-20250219', 'claude-3-5-sonnet-20241022',
-                    'claude-3-5-haiku-20241022', 'claude-3-opus-20240229',
-                    'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'
-                ],
-                gemini: [
-                    'gemini-2.5-pro-preview-05-06', 'gemini-2.5-flash-preview-05-20',
-                    'gemini-2.0-flash', 'gemini-2.0-flash-lite',
-                    'gemini-1.5-flash', 'gemini-1.5-pro'
-                ],
-                deepseek: [
-                    'deepseek-v3-0324', 'deepseek-v2.5-1210', 'deepseek-reasoner',
-                    'deepseek-chat', 'deepseek-coder'
-                ],
-                xai: ['grok-3', 'grok-2', 'grok-1.5', 'grok-1']
-            };
-            
-            if (!supportedModels[apiType]) return false;
-            
-            // 对于gemini，需要特殊处理，因为返回的模型ID可能包含完整路径
-            if (apiType === 'gemini' && modelId.includes('/')) {
-                const shortId = modelId.split('/').pop();
-                return supportedModels[apiType].some(m => shortId.includes(m));
-            }
-            
-            // 对于其他API类型，直接检查模型ID是否在支持列表中
-            return supportedModels[apiType].some(m => modelId.includes(m));
-        }
-        
-        // 修改startValidation，加入模型检测
-        async function detectAndStartValidation() {
-            // 获取API密钥
-            let keys = getApiKeys();
-            
-            // 如果启用了自动检测且有密钥
-            if (autoDetectModels && keys.length > 0) {
-                // 开始检测模型
-                const detected = await detectAvailableModels(keys, currentApiType);
-                if (detected) {
-                    console.log(`已成功检测到 ${currentApiType} 的可用模型`);
-                } else {
-                    console.log(`无法检测到 ${currentApiType} 的可用模型，使用预设模型`);
-                }
-            }
-            
-            // 继续原始验证流程
-            startValidation();
-        }
-    </script>
-</body>
-</html>

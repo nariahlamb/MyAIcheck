@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/语言-Python%20%7C%20JavaScript-blue?style=for-the-badge" alt="语言"/>
   <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="许可证"/>
   
-  [![部署到Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fnariahlamb%2Fopenai_key_validator_src)
+  [![部署到Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FYOUR_USERNAME%2Fopenai_key_validator_src)
 </div>
 
 ## 🌟 项目介绍
@@ -27,14 +27,14 @@ MyAIcheck是一款优雅高效的多平台AI接口密钥验证工具，支持批
 
 ### 在线使用
 
-访问[MyAIcheck在线版本](https://your-deployment-url.vercel.app)立即开始使用。
+访问[MyAIcheck在线版本](https://myaicheck.vercel.app)立即开始使用。
 
 ### 本地部署
 
 1. 克隆仓库
    ```bash
-   git clone https://github.com/YOUR_USERNAME/openai_key_validator_src.git
-   cd openai_key_validator_src
+   git clone https://github.com/nariahlamb/MyAIcheck.git
+   cd MyAIcheck
    ```
 
 2. 安装依赖
@@ -56,7 +56,7 @@ MyAIcheck是一款优雅高效的多平台AI接口密钥验证工具，支持批
 
 只需点击下方按钮，轻松将MyAIcheck部署到Vercel：
 
-[![部署到Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fnariahlamb%2Fopenai_key_validator_src)
+[![部署到Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FYOUR_USERNAME%2Fopenai_key_validator_src)
 
 ## 📖 使用指南
 
