@@ -1175,24 +1175,36 @@
             color: #88C0D0;
         }
         
-        .batch-size-info {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: var(--primary-light);
-            color: white;
-            border: none;
-            font-size: 12px;
-            cursor: pointer;
-            margin-left: 10px;
+        .batch-size-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
-        .dark-mode .batch-size-info {
-            background-color: #5E81AC;
+        .batch-size-input {
+            width: 50px;
+            padding: 5px;
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            transition: var(--transition);
+        }
+        
+        .dark-mode .batch-size-input {
+            background-color: #434C5E;
+            color: #E5E9F0;
+            border-color: #4C566A;
+        }
+        
+        .batch-size-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(240, 98, 146, 0.2);
         }
         
         .batch-size-slider {
-            width: 100%;
+            flex: 1;
             height: 10px;
             border-radius: 5px;
             background: linear-gradient(to right, var(--primary-light), var(--primary-dark));
@@ -1248,6 +1260,186 @@
         .dark-mode .batch-size-marks {
             color: #D8DEE9;
         }
+        
+        /* 夜间模式下的结果摘要样式 */
+        .dark-mode .summary-total {
+            background-color: #3B4252;
+            border-color: #4C566A;
+            color: #E5E9F0;
+        }
+        
+        .dark-mode .summary-valid {
+            background-color: #3B4252;
+            border-color: #4C566A;
+            color: #A3BE8C;
+        }
+        
+        .dark-mode .summary-invalid {
+            background-color: #3B4252;
+            border-color: #4C566A;
+            color: #BF616A;
+        }
+        
+        .dark-mode .summary-item h3 {
+            color: #88C0D0;
+        }
+        
+        .dark-mode .summary-item p {
+            color: #ECEFF4;
+        }
+        
+        /* 并发验证设置 */
+        .concurrency-container {
+            margin: 15px 0;
+            padding: 10px 15px;
+            background-color: #fff5f8;
+            border-radius: 8px;
+            border: 1px dashed var(--primary-light);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .dark-mode .concurrency-container {
+            background-color: #3B4252;
+            border-color: #4C566A;
+        }
+        
+        .concurrency-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .concurrency-label {
+            font-weight: 500;
+            color: var(--primary-dark);
+        }
+        
+        .dark-mode .concurrency-label {
+            color: #88C0D0;
+        }
+        
+        .concurrency-info {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            color: white;
+            border: none;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .dark-mode .concurrency-info {
+            background-color: #5E81AC;
+        }
+        
+        .concurrency-toggle {
+            position: relative;
+            display: inline-block;
+            width: 54px;
+            height: 28px;
+        }
+        
+        .concurrency-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .concurrency-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #f8bbd0;
+            transition: var(--transition);
+            border-radius: 34px;
+        }
+        
+        .concurrency-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: var(--transition);
+            border-radius: 50%;
+        }
+        
+        .concurrency-toggle input:checked + .concurrency-slider {
+            background-color: var(--primary-color);
+        }
+        
+        .concurrency-toggle input:checked + .concurrency-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .concurrency-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .concurrency-value-label {
+            font-weight: 500;
+            color: var(--primary-dark);
+        }
+        
+        .dark-mode .concurrency-value-label {
+            color: #88C0D0;
+        }
+        
+        .concurrency-input {
+            width: 50px;
+            padding: 5px;
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            transition: var(--transition);
+        }
+        
+        .dark-mode .concurrency-input {
+            background-color: #434C5E;
+            color: #E5E9F0;
+        }
+        
+        .concurrency-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(240, 98, 146, 0.2);
+        }
+        
+        .concurrency-input::placeholder {
+            color: #bdbdbd;
+        }
+        
+        .concurrency-help-text {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        
+        .batch-size-info {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            color: white;
+            border: none;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .dark-mode .batch-size-info {
+            background-color: #5E81AC;
+        }
     </style>
 </head>
 <body>
@@ -1301,24 +1493,68 @@
                         <span class="help-text">推荐启用，解决网络连接问题</span>
                     </div>
                     
+                    <!-- 自动检测模型切换 -->
+                    <div class="toggle-container auto-detect-container">
+                        <span class="toggle-label">自动检测可用模型:</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="auto-detect-toggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="help-text">使用首个有效API密钥获取模型列表</span>
+                    </div>
+                    
                     <!-- 批量大小设置 -->
                     <div class="batch-size-container">
                         <div class="batch-size-header">
-                            <span class="batch-size-label">每批验证数量: <span id="batch-size-value">10</span></span>
-                            <button class="batch-size-info" title="影响验证速度和服务器负载，数值越大速度越快但可能导致API限制">ⓘ</button>
+                            <span class="batch-size-label">每批验证数量:</span>
+                            <button class="batch-size-info" title="影响验证速度和服务器负载，数值越大速度越快但可能导致API限制" id="batch-info-btn">ⓘ</button>
                         </div>
-                        <input 
-                            type="range" 
-                            id="batch-size-slider" 
-                            min="1" 
-                            max="50" 
-                            value="10" 
-                            class="batch-size-slider"
-                        >
+                        <div class="batch-size-controls">
+                            <input 
+                                type="range" 
+                                id="batch-size-slider" 
+                                min="1" 
+                                max="50" 
+                                value="10" 
+                                class="batch-size-slider"
+                            >
+                            <input 
+                                type="number" 
+                                id="batch-size-input" 
+                                min="1" 
+                                max="50" 
+                                value="10" 
+                                class="batch-size-input"
+                            >
+                        </div>
                         <div class="batch-size-marks">
-                            <span>慢</span>
-                            <span>平衡</span>
-                            <span>快</span>
+                            <span>慢(1)</span>
+                            <span>平衡(10)</span>
+                            <span>快(50)</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 并发验证设置 -->
+                    <div class="concurrency-container">
+                        <div class="concurrency-header">
+                            <span class="concurrency-label">并发验证:</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="concurrency-toggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <button class="batch-size-info" title="并发同时处理多个批次，大大提高速度但可能导致API限制" id="concurrency-info-btn">ⓘ</button>
+                        </div>
+                        <div class="concurrency-controls" id="concurrency-controls">
+                            <span class="concurrency-value-label">并发数量:</span>
+                            <input 
+                                type="number" 
+                                id="concurrency-input" 
+                                min="1" 
+                                max="10" 
+                                value="3" 
+                                class="concurrency-input"
+                            >
+                            <span class="help-text">并发数过高可能导致API提供商临时封禁</span>
                         </div>
                     </div>
                     
@@ -1527,6 +1763,13 @@
         let isDarkMode = false; // 暗色模式状态
         let nodeInfoVisible = false; // 节点信息显示状态
         let batchSize = 10; // 批量大小，现在可自定义
+        let concurrencyEnabled = true; // 是否启用并发验证
+        let concurrencyCount = 3; // 并发数量
+        let activeBatches = 0; // 当前活跃的批次数量
+        let pendingQueue = []; // 等待处理的并发队列
+        let autoDetectModels = true; // 是否自动检测模型
+        let availableModels = {}; // 每种API类型的可用模型列表
+        let modelDetectionInProgress = false; // 模型检测是否正在进行中
         
         // API验证端点配置
         const API_ENDPOINTS = {
@@ -1618,6 +1861,16 @@
                     // 更新设置显示
                     document.querySelectorAll('.api-settings').forEach(setting => setting.style.display = 'none');
                     document.getElementById(`${currentApiType}-settings`).style.display = 'block';
+                    
+                    // 尝试更新模型选择器
+                    if (autoDetectModels) {
+                        // 获取当前的API密钥
+                        const keys = getApiKeys();
+                        if (keys.length > 0) {
+                            // 尝试检测当前API类型的可用模型
+                            detectAvailableModels(keys, currentApiType);
+                        }
+                    }
                 });
             });
             
@@ -1640,7 +1893,7 @@
             });
             
             // 验证按钮
-            document.getElementById('validate-btn').addEventListener('click', startValidation);
+            document.getElementById('validate-btn').addEventListener('click', detectAndStartValidation);
             
             // 清除按钮
             document.getElementById('clear-btn').addEventListener('click', function() {
@@ -1729,22 +1982,78 @@
             
             // 批量大小滑块事件
             const batchSizeSlider = document.getElementById('batch-size-slider');
-            const batchSizeValue = document.getElementById('batch-size-value');
+            const batchSizeInput = document.getElementById('batch-size-input');
             
+            // 滑块改变时更新输入框
             batchSizeSlider.addEventListener('input', function() {
                 batchSize = parseInt(this.value);
-                batchSizeValue.textContent = batchSize;
+                batchSizeInput.value = batchSize;
             });
             
+            // 输入框改变时更新滑块
+            batchSizeInput.addEventListener('change', function() {
+                let value = parseInt(this.value);
+                // 限制在合法范围内
+                value = Math.max(1, Math.min(50, value));
+                this.value = value;
+                batchSize = value;
+                batchSizeSlider.value = value;
+            });
+            
+            // 并发切换
+            const concurrencyToggle = document.getElementById('concurrency-toggle');
+            const concurrencyControls = document.getElementById('concurrency-controls');
+            const concurrencyInput = document.getElementById('concurrency-input');
+            
+            // 更新并发设置
+            concurrencyToggle.addEventListener('change', function() {
+                concurrencyEnabled = this.checked;
+                concurrencyControls.style.display = concurrencyEnabled ? 'flex' : 'none';
+            });
+            
+            concurrencyInput.addEventListener('change', function() {
+                let value = parseInt(this.value);
+                // 限制在合法范围内
+                value = Math.max(1, Math.min(10, value));
+                this.value = value;
+                concurrencyCount = value;
+            });
+            
+            // 初始化并发控制显示状态
+            concurrencyControls.style.display = concurrencyEnabled ? 'flex' : 'none';
+            
             // 批量大小信息按钮
-            document.querySelector('.batch-size-info').addEventListener('click', function() {
-                alert(`批量大小说明：
-
-- 较小的值 (1-10): 速度较慢但更稳定，适合网络不稳定情况
-- 中等值 (10-25): 平衡的速度和稳定性，适合大多数情况
-- 较大的值 (25-50): 速度快但可能触发API限制，适合小批量高速验证
-
-注意：设置过大可能导致API提供商暂时限制请求，请谨慎使用。`);
+            document.getElementById('batch-info-btn').addEventListener('click', function() {
+                showBatchConcurrencyInfo();
+            });
+            
+            // 并发信息按钮
+            document.getElementById('concurrency-info-btn').addEventListener('click', function() {
+                showBatchConcurrencyInfo();
+            });
+            
+            // 自动检测模型切换
+            document.getElementById('auto-detect-toggle').addEventListener('change', function() {
+                autoDetectModels = this.checked;
+            });
+            
+            // 修改各API类型模型选择器
+            document.querySelectorAll('.model-select').forEach(select => {
+                // 添加加载状态选项
+                const loadingOption = document.createElement('option');
+                loadingOption.value = 'loading';
+                loadingOption.textContent = '正在加载可用模型...';
+                loadingOption.disabled = true;
+                loadingOption.style.display = 'none';
+                select.appendChild(loadingOption);
+                
+                // 添加检测失败选项
+                const failedOption = document.createElement('option');
+                failedOption.value = 'failed';
+                failedOption.textContent = '无法获取模型列表 (使用预设值)';
+                failedOption.disabled = true;
+                failedOption.style.display = 'none';
+                select.appendChild(failedOption);
             });
         });
         
@@ -2012,6 +2321,8 @@
             
             isValidating = false;
             isPaused = false;
+            activeBatches = 0;
+            pendingQueue = [];
             
             // 重置UI
             document.getElementById('pause-btn').textContent = '暂停';
@@ -2164,6 +2475,8 @@
             isValidating = true;
             isPaused = false;
             currentBatchIndex = 0;
+            activeBatches = 0;
+            pendingQueue = [];
             startTime = Date.now();
             
             // 禁用验证按钮
@@ -2253,7 +2566,20 @@
             
             // 选择验证方式
             if (isClientSideValidation) {
-                processValidationBatch();
+                // 创建新的AbortController用于取消验证
+                validationController = new AbortController();
+                
+                // 启动验证处理 - 使用并发处理
+                if (concurrencyEnabled) {
+                    // 初始启动多个并发批次
+                    const initialBatchCount = Math.min(concurrencyCount, Math.ceil(validationQueue.length / batchSize));
+                    for (let i = 0; i < initialBatchCount; i++) {
+                        processConcurrentBatch();
+                    }
+                } else {
+                    // 顺序处理
+                    processValidationBatch();
+                }
             } else {
                 await validateKeysServerSide(keys, updateProgress);
             }
@@ -2285,7 +2611,7 @@
             processValidationBatch();
         }
         
-        // 处理验证批次
+        // 处理验证批次 (顺序执行版本)
         async function processValidationBatch() {
             if (!isValidating || isPaused) return;
             
@@ -2358,6 +2684,114 @@
                         setTimeout(processValidationBatch, 2000); // 延迟更长时间后重试
                     }
                 }
+            }
+        }
+        
+        // 处理并发验证批次 (并发执行版本)
+        async function processConcurrentBatch() {
+            if (!isValidating || isPaused) return;
+            
+            // 如果已经达到最大并发数，则不继续添加新任务
+            if (activeBatches >= concurrencyCount) return;
+            
+            // 增加活跃批次计数
+            activeBatches++;
+            
+            try {
+                const totalKeys = validationQueue.length;
+                
+                // 如果所有批次已处理完毕
+                if (currentBatchIndex >= validationQueue.length) {
+                    // 减少活跃批次计数
+                    activeBatches--;
+                    
+                    // 如果没有更多活跃批次，完成验证
+                    if (activeBatches === 0 && pendingQueue.length === 0) {
+                        finishValidation();
+                    }
+                    return;
+                }
+                
+                // 获取当前批次
+                const endIndex = Math.min(currentBatchIndex + batchSize, validationQueue.length);
+                const currentBatch = validationQueue.slice(currentBatchIndex, endIndex);
+                
+                // 移动指针到下一批
+                currentBatchIndex = endIndex;
+                
+                // 选择的模型
+                const selectedModel = getSelectedModel();
+                
+                // 获取当前已处理的数量
+                const processedCountBefore = validationResults.length;
+                
+                // 并行验证当前批次
+                const batchPromises = currentBatch.map(key => 
+                    validateSingleKeyClientSide(key, currentApiType, selectedModel, validationController.signal)
+                );
+                
+                // 等待当前批次完成
+                const batchResults = await Promise.all(batchPromises);
+                
+                // 确保我们仍在验证中（可能在等待过程中被取消）
+                if (!isValidating) {
+                    activeBatches--;
+                    return;
+                }
+                
+                // 更新结果
+                validationResults.push(...batchResults);
+                
+                // 更新统计信息
+                batchResults.forEach(result => {
+                    if (result.valid) validationStats.valid++;
+                    else if (result.error_code === 'NETWORK_ERROR') validationStats.error++;
+                    else validationStats.invalid++;
+                });
+                
+                // 更新进度
+                const newProcessedCount = validationResults.length;
+                const progress = (newProcessedCount / totalKeys) * 100;
+                updateProgress(progress, `已验证 ${newProcessedCount}/${totalKeys}`);
+                updateValidationStats(newProcessedCount, totalKeys);
+                
+                // 减少活跃批次计数
+                activeBatches--;
+                
+                // 如果暂停，则不继续处理
+                if (isPaused) return;
+                
+                // 如果还有更多要处理，延迟一下再启动下一个批次
+                if (currentBatchIndex < validationQueue.length) {
+                    // 根据批次大小调整延迟时间
+                    const delay = Math.min(50 + (batchSize * 20), 1000); // 并发模式下使用更短的延迟
+                    setTimeout(processConcurrentBatch, delay);
+                } else if (activeBatches === 0) {
+                    // 没有更多要处理，且所有活跃批次已完成
+                    finishValidation();
+                }
+            } catch (error) {
+                // 减少活跃批次计数
+                activeBatches--;
+                
+                if (error.name === 'AbortError') {
+                    console.log('并发验证被取消');
+                } else {
+                    console.error('并发批次处理错误:', error);
+                    
+                    // 如果出错但未被取消，继续处理下一批
+                    if (isValidating && !isPaused && currentBatchIndex < validationQueue.length) {
+                        setTimeout(processConcurrentBatch, 2000); // 延迟更长时间后重试
+                    } else if (activeBatches === 0) {
+                        // 如果没有更多活跃批次，且已经处理完所有批次
+                        finishValidation();
+                    }
+                }
+            }
+            
+            // 尝试启动更多批次，保持并发度
+            if (isValidating && !isPaused && activeBatches < concurrencyCount && currentBatchIndex < validationQueue.length) {
+                setTimeout(processConcurrentBatch, 100);
             }
         }
         
@@ -2929,6 +3363,370 @@
             if (userAgent.indexOf("Android") > -1) return "Android";
             if (userAgent.indexOf("iOS") > -1 || userAgent.indexOf("iPhone") > -1 || userAgent.indexOf("iPad") > -1) return "iOS";
             return "Unknown";
+        }
+        
+        // 显示批次和并发的详细说明
+        function showBatchConcurrencyInfo() {
+            alert(`【验证参数说明】
+
+【批量大小】是指一次性发送多少个密钥请求:
+• 小批量(1-10): 速度较慢但更稳定，适合网络不稳定情况
+• 中等值(10-25): 平衡的速度和稳定性，适合大多数情况
+• 大批量(25-50): 速度快但可能触发API限制
+
+【并发验证】是指同时处理多少批密钥:
+• 并发数小(1-3): 稳定性高，适合长期运行
+• 并发数中(3-5): 平衡速度和稳定性
+• 并发数大(5-10): 极快但可能导致API提供商暂时封禁
+
+【如何选择最佳参数】:
+• 少量密钥(<100): 批量=10, 并发=3
+• 中量密钥(100-1000): 批量=20, 并发=3
+• 大量密钥(>1000): 批量=10, 并发=5
+• 极速验证: 批量=30, 并发=5 (风险较高)
+• 稳定模式: 批量=5, 并发=1 (最慢但最稳定)
+
+注意: 过高的设置可能导致API提供商临时限制或封禁您的IP地址，请谨慎使用。`);
+        }
+        
+        // 自动检测可用模型
+        async function detectAvailableModels(keys, apiType) {
+            if (!keys || keys.length === 0 || !autoDetectModels) return false;
+            if (modelDetectionInProgress) return false;
+            
+            modelDetectionInProgress = true;
+            
+            // 显示加载状态
+            const selectElement = document.getElementById(`${apiType}-model`);
+            if (selectElement) {
+                // 隐藏所有常规选项
+                Array.from(selectElement.options).forEach(opt => {
+                    if (opt.value !== 'loading' && opt.value !== 'failed') {
+                        opt.style.display = 'none';
+                    }
+                });
+                
+                // 显示加载选项
+                Array.from(selectElement.options).find(opt => opt.value === 'loading').style.display = '';
+                selectElement.value = 'loading';
+            }
+            
+            try {
+                // 获取API配置
+                const config = API_ENDPOINTS[apiType];
+                if (!config || !config.models) {
+                    throw new Error('无效的API配置');
+                }
+                
+                // 尝试验证第一个密钥
+                let validKey = null;
+                let keyIndex = 0;
+                
+                // 尝试最多5个密钥
+                while (!validKey && keyIndex < Math.min(5, keys.length)) {
+                    const key = keys[keyIndex];
+                    try {
+                        // 尝试使用密钥获取模型列表
+                        const isValid = await testApiKey(key, apiType);
+                        if (isValid) {
+                            validKey = key;
+                            break;
+                        }
+                    } catch (e) {
+                        // 继续尝试下一个密钥
+                    }
+                    keyIndex++;
+                }
+                
+                if (!validKey) {
+                    throw new Error('未找到有效的API密钥来获取模型');
+                }
+                
+                // 使用有效的密钥获取模型列表
+                const models = await fetchModelList(validKey, apiType);
+                
+                if (!models || models.length === 0) {
+                    throw new Error('获取的模型列表为空');
+                }
+                
+                // 存储可用模型
+                availableModels[apiType] = models;
+                
+                // 更新选择器
+                if (selectElement) {
+                    // 清空现有选项（保留加载和失败选项）
+                    Array.from(selectElement.options).forEach(opt => {
+                        if (opt.value !== 'loading' && opt.value !== 'failed') {
+                            selectElement.removeChild(opt);
+                        }
+                    });
+                    
+                    // 隐藏加载选项
+                    Array.from(selectElement.options).find(opt => opt.value === 'loading').style.display = 'none';
+                    Array.from(selectElement.options).find(opt => opt.value === 'failed').style.display = 'none';
+                    
+                    // 添加新的模型选项
+                    models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.id;
+                        option.textContent = model.name || model.id;
+                        // 如果存在支持标签，则添加到选项文本中
+                        if (model.supported) {
+                            option.textContent += ' (推荐)';
+                        }
+                        selectElement.appendChild(option);
+                    });
+                    
+                    // 选择第一个模型
+                    if (models.length > 0) {
+                        // 优先选择推荐/支持的模型
+                        const recommendedModel = models.find(m => m.supported);
+                        if (recommendedModel) {
+                            selectElement.value = recommendedModel.id;
+                        } else {
+                            selectElement.value = models[0].id;
+                        }
+                    }
+                }
+                
+                modelDetectionInProgress = false;
+                return true;
+            } catch (error) {
+                console.error(`检测模型失败(${apiType}):`, error);
+                
+                // 显示失败状态
+                if (selectElement) {
+                    // 显示失败选项
+                    Array.from(selectElement.options).find(opt => opt.value === 'loading').style.display = 'none';
+                    Array.from(selectElement.options).find(opt => opt.value === 'failed').style.display = '';
+                    
+                    // 显示所有原始选项
+                    Array.from(selectElement.options).forEach(opt => {
+                        if (opt.value !== 'loading' && opt.value !== 'failed') {
+                            opt.style.display = '';
+                        }
+                    });
+                    
+                    // 选择第一个非加载/失败选项
+                    const firstRegularOption = Array.from(selectElement.options).find(opt => 
+                        opt.value !== 'loading' && opt.value !== 'failed'
+                    );
+                    if (firstRegularOption) {
+                        selectElement.value = firstRegularOption.value;
+                    }
+                }
+                
+                modelDetectionInProgress = false;
+                return false;
+            }
+        }
+        
+        // 测试API密钥是否有效
+        async function testApiKey(key, apiType) {
+            const config = API_ENDPOINTS[apiType];
+            if (!config || !config.models) {
+                return false;
+            }
+            
+            let headers = {};
+            
+            // 设置不同API的头信息
+            switch (apiType) {
+                case 'openai':
+                case 'openai_like':
+                case 'deepseek':
+                case 'xai':
+                    headers = {
+                        'Authorization': `Bearer ${key}`,
+                        'Content-Type': 'application/json'
+                    };
+                    break;
+                case 'claude':
+                    headers = {
+                        'x-api-key': key,
+                        'anthropic-version': '2023-06-01',
+                        'Content-Type': 'application/json'
+                    };
+                    break;
+                case 'gemini':
+                    // 不需要头部，使用URL参数
+                    break;
+                default:
+                    return false;
+            }
+            
+            try {
+                let url = config.models;
+                // 对于Gemini，将密钥作为URL参数
+                if (apiType === 'gemini') {
+                    url = `${config.models}?key=${key}`;
+                }
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: headers,
+                    signal: AbortSignal.timeout(10000) // 10秒超时
+                });
+                
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+        
+        // 获取模型列表
+        async function fetchModelList(key, apiType) {
+            const config = API_ENDPOINTS[apiType];
+            if (!config || !config.models) {
+                throw new Error('无效的API配置');
+            }
+            
+            let headers = {};
+            
+            // 设置不同API的头信息
+            switch (apiType) {
+                case 'openai':
+                case 'openai_like':
+                case 'deepseek':
+                case 'xai':
+                    headers = {
+                        'Authorization': `Bearer ${key}`,
+                        'Content-Type': 'application/json'
+                    };
+                    break;
+                case 'claude':
+                    headers = {
+                        'x-api-key': key,
+                        'anthropic-version': '2023-06-01',
+                        'Content-Type': 'application/json'
+                    };
+                    break;
+                case 'gemini':
+                    // 不需要头部，使用URL参数
+                    break;
+                default:
+                    throw new Error('不支持的API类型');
+            }
+            
+            try {
+                let url = config.models;
+                // 对于Gemini，将密钥作为URL参数
+                if (apiType === 'gemini') {
+                    url = `${config.models}?key=${key}`;
+                }
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: headers,
+                    signal: AbortSignal.timeout(10000) // 10秒超时
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP错误: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                let models = [];
+                
+                // 不同API返回的模型数据结构不同，需要分别处理
+                switch (apiType) {
+                    case 'openai':
+                    case 'openai_like':
+                    case 'deepseek':
+                    case 'xai':
+                        models = data.data.map(model => ({
+                            id: model.id,
+                            name: model.id, // 使用id作为名称
+                            supported: isSupportedModel(model.id, apiType)
+                        }));
+                        break;
+                    case 'claude':
+                        models = data.models.map(model => ({
+                            id: model.id,
+                            name: model.id,
+                            supported: isSupportedModel(model.id, apiType)
+                        }));
+                        break;
+                    case 'gemini':
+                        models = data.models.map(model => ({
+                            id: model.name.split('/').pop(), // 从路径中提取模型名称
+                            name: model.name.split('/').pop(),
+                            supported: isSupportedModel(model.name, apiType)
+                        }));
+                        break;
+                }
+                
+                // 按照字母顺序排序，但将支持的模型排在前面
+                models.sort((a, b) => {
+                    if (a.supported && !b.supported) return -1;
+                    if (!a.supported && b.supported) return 1;
+                    return a.name.localeCompare(b.name);
+                });
+                
+                return models;
+            } catch (error) {
+                console.error(`获取模型列表失败(${apiType}):`, error);
+                throw error;
+            }
+        }
+        
+        // 检查是否为支持的模型
+        function isSupportedModel(modelId, apiType) {
+            // 定义每种API类型支持的模型列表
+            const supportedModels = {
+                openai: [
+                    'gpt-4o', 'gpt-4o-2024-05-13', 'gpt-4o-mini', 
+                    'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo',
+                    'gpt-o1-preview', 'gpt-o1-mini-preview'
+                ],
+                claude: [
+                    'claude-opus-4-20250514', 'claude-sonnet-4-20250514',
+                    'claude-3-7-sonnet-20250219', 'claude-3-5-sonnet-20241022',
+                    'claude-3-5-haiku-20241022', 'claude-3-opus-20240229',
+                    'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'
+                ],
+                gemini: [
+                    'gemini-2.5-pro-preview-05-06', 'gemini-2.5-flash-preview-05-20',
+                    'gemini-2.0-flash', 'gemini-2.0-flash-lite',
+                    'gemini-1.5-flash', 'gemini-1.5-pro'
+                ],
+                deepseek: [
+                    'deepseek-v3-0324', 'deepseek-v2.5-1210', 'deepseek-reasoner',
+                    'deepseek-chat', 'deepseek-coder'
+                ],
+                xai: ['grok-3', 'grok-2', 'grok-1.5', 'grok-1']
+            };
+            
+            if (!supportedModels[apiType]) return false;
+            
+            // 对于gemini，需要特殊处理，因为返回的模型ID可能包含完整路径
+            if (apiType === 'gemini' && modelId.includes('/')) {
+                const shortId = modelId.split('/').pop();
+                return supportedModels[apiType].some(m => shortId.includes(m));
+            }
+            
+            // 对于其他API类型，直接检查模型ID是否在支持列表中
+            return supportedModels[apiType].some(m => modelId.includes(m));
+        }
+        
+        // 修改startValidation，加入模型检测
+        async function detectAndStartValidation() {
+            // 获取API密钥
+            let keys = getApiKeys();
+            
+            // 如果启用了自动检测且有密钥
+            if (autoDetectModels && keys.length > 0) {
+                // 开始检测模型
+                const detected = await detectAvailableModels(keys, currentApiType);
+                if (detected) {
+                    console.log(`已成功检测到 ${currentApiType} 的可用模型`);
+                } else {
+                    console.log(`无法检测到 ${currentApiType} 的可用模型，使用预设模型`);
+                }
+            }
+            
+            // 继续原始验证流程
+            startValidation();
         }
     </script>
 </body>
