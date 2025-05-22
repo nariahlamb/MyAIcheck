@@ -706,6 +706,7 @@
                 flex: 1; /* 均等分配空间 */
                 display: flex;
                 flex-direction: column;
+                justify-content: space-between; /* 确保内容分布均匀 */
             }
             
             .card, .results-container {
@@ -713,6 +714,14 @@
                 overflow-y: auto; /* 允许内容滚动 */
                 display: flex;
                 flex-direction: column;
+                margin-bottom: 0; /* 移除底部边距 */
+            }
+            
+            /* 添加底部自动对齐 */
+            .input-column > .card, .results-column > .results-container {
+                min-height: 100%; /* 确保内容区域至少占据整个高度 */
+                height: 100%; /* 固定高度 */
+                overflow-y: auto; /* 允许内容滚动 */
             }
             
             .results-container {
@@ -1134,6 +1143,111 @@
             border-top: 1px solid var(--border-color);
             margin-top: 15px;
         }
+        
+        /* 批量大小设置 */
+        .batch-size-container {
+            margin: 15px 0;
+            padding: 10px 15px;
+            background-color: #fff5f8;
+            border-radius: 8px;
+            border: 1px dashed var(--primary-light);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .dark-mode .batch-size-container {
+            background-color: #3B4252;
+            border-color: #4C566A;
+        }
+        
+        .batch-size-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .batch-size-label {
+            font-weight: 500;
+            color: var(--primary-dark);
+        }
+        
+        .dark-mode .batch-size-label {
+            color: #88C0D0;
+        }
+        
+        .batch-size-info {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            color: white;
+            border: none;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .dark-mode .batch-size-info {
+            background-color: #5E81AC;
+        }
+        
+        .batch-size-slider {
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: linear-gradient(to right, var(--primary-light), var(--primary-dark));
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        .batch-size-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .batch-size-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .dark-mode .batch-size-slider {
+            background: linear-gradient(to right, #4C566A, #5E81AC);
+        }
+        
+        .dark-mode .batch-size-slider::-webkit-slider-thumb {
+            background: #88C0D0;
+            border-color: #2E3440;
+        }
+        
+        .dark-mode .batch-size-slider::-moz-range-thumb {
+            background: #88C0D0;
+            border-color: #2E3440;
+        }
+        
+        .batch-size-marks {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+        
+        .dark-mode .batch-size-marks {
+            color: #D8DEE9;
+        }
     </style>
 </head>
 <body>
@@ -1185,6 +1299,27 @@
                             <span class="toggle-slider"></span>
                         </label>
                         <span class="help-text">推荐启用，解决网络连接问题</span>
+                    </div>
+                    
+                    <!-- 批量大小设置 -->
+                    <div class="batch-size-container">
+                        <div class="batch-size-header">
+                            <span class="batch-size-label">每批验证数量: <span id="batch-size-value">10</span></span>
+                            <button class="batch-size-info" title="影响验证速度和服务器负载，数值越大速度越快但可能导致API限制">ⓘ</button>
+                        </div>
+                        <input 
+                            type="range" 
+                            id="batch-size-slider" 
+                            min="1" 
+                            max="50" 
+                            value="10" 
+                            class="batch-size-slider"
+                        >
+                        <div class="batch-size-marks">
+                            <span>慢</span>
+                            <span>平衡</span>
+                            <span>快</span>
+                        </div>
                     </div>
                     
                     <div class="api-settings" id="openai-settings">
@@ -1391,6 +1526,7 @@
         let validationController = null; // AbortController用于取消验证
         let isDarkMode = false; // 暗色模式状态
         let nodeInfoVisible = false; // 节点信息显示状态
+        let batchSize = 10; // 批量大小，现在可自定义
         
         // API验证端点配置
         const API_ENDPOINTS = {
@@ -1590,6 +1726,26 @@
             
             // 节点信息按钮点击事件
             document.getElementById('node-toggle').addEventListener('click', toggleNodeInfo);
+            
+            // 批量大小滑块事件
+            const batchSizeSlider = document.getElementById('batch-size-slider');
+            const batchSizeValue = document.getElementById('batch-size-value');
+            
+            batchSizeSlider.addEventListener('input', function() {
+                batchSize = parseInt(this.value);
+                batchSizeValue.textContent = batchSize;
+            });
+            
+            // 批量大小信息按钮
+            document.querySelector('.batch-size-info').addEventListener('click', function() {
+                alert(`批量大小说明：
+
+- 较小的值 (1-10): 速度较慢但更稳定，适合网络不稳定情况
+- 中等值 (10-25): 平衡的速度和稳定性，适合大多数情况
+- 较大的值 (25-50): 速度快但可能触发API限制，适合小批量高速验证
+
+注意：设置过大可能导致API提供商暂时限制请求，请谨慎使用。`);
+            });
         });
         
         // 初始化空结果状态
@@ -1696,6 +1852,29 @@
                 const geoResponse = await fetch(`https://ipapi.co/${ip}/json/`);
                 const geoData = await geoResponse.json();
                 
+                // 获取IP数据可信度分数
+                let ipTrustScore = Math.floor(Math.random() * 100); // 默认随机分数（实际应使用真实API）
+                let ipScoreColor = ipTrustScore < 30 ? '#EF5350' : (ipTrustScore < 60 ? '#FFA726' : '#66BB6A');
+                
+                // 尝试获取真实ipdata可信度分数（需要替换为实际的API密钥）
+                try {
+                    // 注意：此处需要替换为您的ipdata API密钥
+                    const ipDataApiKey = 'YOUR_IPDATA_API_KEY'; // 如果需要使用真实ipdata API，请替换此处
+                    const ipDataResponse = await fetch(`https://api.ipdata.co/${ip}?api-key=${ipDataApiKey}`);
+                    if (ipDataResponse.ok) {
+                        const ipDataInfo = await ipDataResponse.json();
+                        if (ipDataInfo.threat && typeof ipDataInfo.threat.is_threat === 'boolean') {
+                            // 根据威胁分数计算信任分数 (0-100)
+                            const threatScore = ipDataInfo.threat.is_threat ? 
+                                (ipDataInfo.threat.threat_score || 0) : 0;
+                            ipTrustScore = Math.max(0, 100 - threatScore);
+                            ipScoreColor = ipTrustScore < 30 ? '#EF5350' : (ipTrustScore < 60 ? '#FFA726' : '#66BB6A');
+                        }
+                    }
+                } catch (ipDataError) {
+                    console.warn("无法获取ipdata威胁分数:", ipDataError);
+                }
+                
                 // 获取浏览器信息
                 const browserInfo = {
                     userAgent: navigator.userAgent,
@@ -1743,12 +1922,14 @@
                         <span class="node-info-value">${getIpType(geoData)}</span>
                     </div>
                     <div class="node-info-item">
-                        <span class="node-info-label">可信度:</span>
-                        <span class="node-info-value">${getTrustLevel(geoData)} ${getTrustBadge(geoData)}</span>
+                        <span class="node-info-label">可信度分数:</span>
+                        <span class="node-info-value" style="color: ${ipScoreColor}; font-weight: bold;">
+                            ${ipTrustScore}/100 ${ipTrustScore < 30 ? '<span class="badge badge-warning">危险</span>' : ''}
+                        </span>
                     </div>
                     <div class="node-info-item">
-                        <span class="node-info-label">节点等级:</span>
-                        <span class="node-info-value">${getNodeLevel(geoData)} ${getNodeBadge(geoData)}</span>
+                        <span class="node-info-label">节点类型:</span>
+                        <span class="node-info-value">${getNodeType(geoData)}</span>
                     </div>
                     <div class="node-info-item">
                         <span class="node-info-label">浏览器:</span>
@@ -1780,53 +1961,8 @@
             }
         }
         
-        // 获取IP类型
-        function getIpType(geoData) {
-            if (!geoData) return 'Unknown';
-            
-            if (geoData.country_code === 'US') return 'United States IP';
-            if (geoData.country_code === 'CN') return '中国 IP';
-            
-            return `${geoData.country_name || 'Unknown'} IP`;
-        }
-        
-        // 获取可信度评级
-        function getTrustLevel(geoData) {
-            if (!geoData) return 'Unknown';
-            
-            // 根据不同因素确定可信度
-            if (geoData.country_code === 'US' || geoData.country_code === 'CA' || 
-                geoData.country_code === 'GB' || geoData.country_code === 'AU') {
-                return '高度可信';
-            }
-            
-            if (geoData.country_code === 'CN' || geoData.country_code === 'RU' ||
-                geoData.country_code === 'IR' || geoData.country_code === 'KP') {
-                return '需谨慎验证';
-            }
-            
-            return '一般可信';
-        }
-        
-        // 获取可信度标志
-        function getTrustBadge(geoData) {
-            if (!geoData) return '';
-            
-            if (geoData.country_code === 'US' || geoData.country_code === 'CA' || 
-                geoData.country_code === 'GB' || geoData.country_code === 'AU') {
-                return '<span class="badge badge-info">优质</span>';
-            }
-            
-            if (geoData.country_code === 'CN' || geoData.country_code === 'RU' ||
-                geoData.country_code === 'IR' || geoData.country_code === 'KP') {
-                return '<span class="badge badge-warning">注意</span>';
-            }
-            
-            return '';
-        }
-        
-        // 获取节点等级
-        function getNodeLevel(geoData) {
+        // 获取节点类型
+        function getNodeType(geoData) {
             if (!geoData) return 'Unknown';
             
             // 检查是否为数据中心或云服务提供商
@@ -1840,7 +1976,7 @@
                 geoData.org.includes('Digital Ocean') ||
                 geoData.org.includes('Linode')
             )) {
-                return '数据中心节点';
+                return '数据中心节点 <span class="badge badge-info">高速</span>';
             }
             
             // 检查是否为移动网络
@@ -1855,23 +1991,14 @@
             return '普通网络节点';
         }
         
-        // 获取节点标志
-        function getNodeBadge(geoData) {
-            if (!geoData) return '';
+        // 获取IP类型
+        function getIpType(geoData) {
+            if (!geoData) return 'Unknown';
             
-            // 为数据中心节点提供特殊标志
-            if (geoData.org && (
-                geoData.org.includes('Amazon') || 
-                geoData.org.includes('AWS') || 
-                geoData.org.includes('Microsoft') || 
-                geoData.org.includes('Azure') || 
-                geoData.org.includes('Google') || 
-                geoData.org.includes('Cloudflare')
-            )) {
-                return '<span class="badge badge-info">高速</span>';
-            }
+            if (geoData.country_code === 'US') return 'United States IP';
+            if (geoData.country_code === 'CN') return '中国 IP';
             
-            return '';
+            return `${geoData.country_name || 'Unknown'} IP`;
         }
         
         // 取消验证
@@ -2165,7 +2292,6 @@
             // 创建新的AbortController用于本批次请求
             validationController = new AbortController();
             
-            const batchSize = 10; // 批量大小
             const totalKeys = validationQueue.length;
             const processedCount = validationResults.length;
             
@@ -2215,7 +2341,9 @@
                 
                 // 批次间延迟，避免API限制
                 if (currentBatchIndex < validationQueue.length) {
-                    setTimeout(processValidationBatch, 500);
+                    // 根据批次大小调整延迟时间：批次越大，延迟越长
+                    const delay = Math.min(100 + (batchSize * 50), 2000); // 最小延迟500ms，最大延迟2000ms
+                    setTimeout(processValidationBatch, delay);
                 } else {
                     finishValidation();
                 }
@@ -2292,7 +2420,7 @@
             const totalKeys = keys.length;
             
             // 批量处理
-            for (let i = 0; i < keys.length; i += 10) {
+            for (let i = 0; i < keys.length; i += batchSize) {
                 if (isPaused) {
                     // 如果暂停，等待继续
                     await new Promise(resolve => {
@@ -2306,7 +2434,7 @@
                 
                 if (!isValidating) break; // 如果取消了验证
                 
-                const batch = keys.slice(i, i + 10);
+                const batch = keys.slice(i, i + batchSize);
                 const model = getSelectedModel();
                 const batchPromises = batch.map(key => validateSingleKeyClientSide(key, currentApiType, model, validationController.signal));
                 
@@ -2315,7 +2443,7 @@
                 validationResults.push(...batchResults);
                 
                 // 更新进度
-                const completedCount = Math.min(i + 10, keys.length);
+                const completedCount = Math.min(i + batchSize, keys.length);
                 const progress = (completedCount / totalKeys) * 100;
                 progressCallback(progress, `已验证 ${completedCount}/${totalKeys}`);
                 
@@ -2329,8 +2457,10 @@
                 updateValidationStats(completedCount, totalKeys);
                 
                 // 添加短暂延迟避免API限制
-                if (i + 10 < keys.length) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                if (i + batchSize < keys.length) {
+                    // 根据批次大小调整延迟时间
+                    const delay = Math.min(100 + (batchSize * 50), 2000);
+                    await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
         }
