@@ -28,21 +28,21 @@
         
         /* 暗色模式变量 */
         .dark-mode {
-            --primary-color: #ec407a; /* 深粉色主色调 */
-            --primary-light: #f48fb1; /* 中粉色 */
-            --primary-dark: #c2185b; /* 更深粉色 */
-            --secondary-color: #ba68c8; /* 亮紫色辅助色 */
-            --accent-color: #42a5f5; /* 亮蓝色强调色 */
-            --success-color: #4caf50; /* 绿色成功提示 */
-            --error-color: #f44336; /* 红色错误提示 */
-            --warning-color: #ffc107; /* 黄色警告提示 */
-            --bg-color: #212121; /* 深灰背景 */
-            --bg-gradient: linear-gradient(135deg, #212121 0%, #303030 100%); /* 暗色渐变背景 */
-            --card-bg: #303030; /* 卡片背景 */
-            --text-color: #f5f5f5; /* 文本颜色 */
-            --text-light: #bdbdbd; /* 浅色文本 */
-            --border-color: #424242; /* 边框颜色 */
-            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); /* 阴影效果 */
+            --primary-color: #88C0D0; /* Nord蓝色调 */
+            --primary-light: #8FBCBB; /* Nord浅蓝 */
+            --primary-dark: #5E81AC; /* Nord深蓝 */
+            --secondary-color: #B48EAD; /* Nord紫色 */
+            --accent-color: #81A1C1; /* Nord亮蓝 */
+            --success-color: #A3BE8C; /* Nord绿色 */
+            --error-color: #BF616A; /* Nord红色 */
+            --warning-color: #EBCB8B; /* Nord黄色 */
+            --bg-color: #2E3440; /* Nord最深背景 */
+            --bg-gradient: linear-gradient(135deg, #2E3440 0%, #3B4252 100%); /* Nord渐变背景 */
+            --card-bg: #3B4252; /* Nord次深背景 */
+            --text-color: #ECEFF4; /* Nord雪白 */
+            --text-light: #E5E9F0; /* Nord浅雪白 */
+            --border-color: #4C566A; /* Nord浅灰色 */
+            --box-shadow: 0 4px 20px rgba(46, 52, 64, 0.5); /* 阴影效果 */
         }
         
         * {
@@ -732,24 +732,77 @@
         }
         
         .dark-mode .results-table th {
-            background-color: #424242;
-            color: #f8bbd0;
+            background-color: #434C5E;
+            color: #ECEFF4;
         }
         
         .dark-mode .results-table {
-            border-color: #424242;
+            border-color: #4C566A;
         }
         
         .dark-mode .results-table td {
-            border-bottom-color: #424242;
+            border-bottom-color: #4C566A;
         }
         
         .dark-mode .results-table tr:nth-child(even) {
-            background-color: #383838;
+            background-color: #3B4252;
         }
         
         .dark-mode .results-table tr:hover {
-            background-color: #505050;
+            background-color: #4C566A;
+        }
+        
+        /* 暗色模式下的按钮样式优化 */
+        .dark-mode .btn-primary {
+            background-color: #5E81AC;
+            color: #ECEFF4;
+        }
+        
+        .dark-mode .btn-primary:hover {
+            background-color: #81A1C1;
+        }
+        
+        .dark-mode .btn-secondary {
+            background-color: #4C566A;
+            color: #E5E9F0;
+        }
+        
+        .dark-mode .btn-secondary:hover {
+            background-color: #5E81AC;
+        }
+        
+        .dark-mode .btn-success {
+            background-color: #A3BE8C;
+            color: #2E3440;
+        }
+        
+        .dark-mode .btn-success:hover {
+            background-color: #8FBCBB;
+        }
+        
+        .dark-mode .btn-pause {
+            background-color: #EBCB8B;
+            color: #2E3440;
+        }
+        
+        .dark-mode .btn-pause:hover {
+            background-color: #D08770;
+        }
+        
+        .dark-mode .api-type-btn {
+            border-color: #4C566A;
+            background-color: #3B4252;
+            color: #E5E9F0;
+        }
+        
+        .dark-mode .api-type-btn.active {
+            background-color: #5E81AC;
+            color: #ECEFF4;
+            border-color: #5E81AC;
+        }
+        
+        .dark-mode .api-type-btn:hover {
+            box-shadow: 0 5px 15px rgba(136, 192, 208, 0.3);
         }
         
         .results-table th:nth-child(1),
@@ -766,10 +819,11 @@
             z-index: 1000;
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 15px;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
             background-color: var(--card-bg);
-            border-radius: 30px;
+            border-radius: 50%;
             box-shadow: var(--box-shadow);
             cursor: pointer;
             transition: var(--transition);
@@ -777,26 +831,20 @@
         }
         
         .theme-toggle:hover {
-            transform: translateY(-2px);
+            transform: translateY(-2px) rotate(15deg);
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
         }
         
         .theme-toggle-icon {
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             color: var(--primary-color);
-        }
-        
-        .theme-toggle-text {
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--text-color);
         }
         
         /* 节点信息区域样式 */
         .node-info {
             position: fixed;
-            top: 70px;
-            right: 20px;
+            top: 20px;
+            right: 80px;
             width: 300px;
             background-color: var(--card-bg);
             border-radius: var(--border-radius);
@@ -804,13 +852,8 @@
             padding: 15px;
             z-index: 1000;
             border: 1px solid var(--border-color);
-            max-height: 300px;
+            max-height: 500px;
             overflow-y: auto;
-            display: none;
-        }
-        
-        .node-info.visible {
-            display: block;
             animation: fadeIn 0.3s ease;
         }
         
@@ -829,21 +872,23 @@
         }
         
         .node-info-refresh {
-            font-size: 0.9rem;
-            color: var(--accent-color);
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 5px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
+            background-color: var(--primary-light);
+            color: var(--card-bg);
+            cursor: pointer;
+            border: none;
+            font-size: 1.2rem;
             transition: var(--transition);
         }
         
         .node-info-refresh:hover {
-            color: var(--primary-color);
-            transform: scale(1.05);
+            transform: rotate(180deg);
+            background-color: var(--primary-color);
         }
         
         .node-info-item {
@@ -902,13 +947,6 @@
         <!-- 暗色模式切换按钮 -->
         <div class="theme-toggle" id="theme-toggle">
             <span class="theme-toggle-icon">🌙</span>
-            <span class="theme-toggle-text">暗色模式</span>
-        </div>
-        
-        <!-- 节点信息开关按钮 -->
-        <div class="theme-toggle" id="node-toggle" style="top: 70px;">
-            <span class="theme-toggle-icon">📡</span>
-            <span class="theme-toggle-text">节点信息</span>
         </div>
         
         <!-- 节点信息区域 -->
@@ -916,8 +954,7 @@
             <div class="node-info-header">
                 <h3 class="node-info-title">节点信息</h3>
                 <button class="node-info-refresh" id="refresh-node-info">
-                    <span>刷新</span>
-                    <span>🔄</span>
+                    ↻
                 </button>
             </div>
             <div id="node-info-content">
@@ -1059,8 +1096,6 @@
                     
                     <div class="actions-container">
                         <button id="validate-btn" class="btn btn-primary">验证密钥</button>
-                        <button id="export-valid-btn" class="btn btn-success" disabled>导出有效密钥</button>
-                        <button id="export-all-btn" class="btn btn-secondary" disabled>导出所有结果</button>
                         <button id="clear-btn" class="btn btn-secondary">清除</button>
                     </div>
                     
@@ -1270,20 +1305,8 @@
                 document.getElementById('progress-container').style.display = 'none';
                 validationResults = [];
                 // 禁用导出按钮
-                document.getElementById('export-valid-btn').disabled = true;
-                document.getElementById('export-all-btn').disabled = true;
                 document.getElementById('export-valid-results-btn').disabled = true;
                 document.getElementById('export-all-results-btn').disabled = true;
-            });
-            
-            // 导出有效密钥按钮
-            document.getElementById('export-valid-btn').addEventListener('click', function() {
-                exportResults('valid');
-            });
-            
-            // 导出所有结果按钮
-            document.getElementById('export-all-btn').addEventListener('click', function() {
-                exportResults('all');
             });
             
             // 结果区域导出按钮
@@ -1326,14 +1349,11 @@
             // 暗色模式切换
             document.getElementById('theme-toggle').addEventListener('click', toggleDarkMode);
             
-            // 节点信息按钮
-            document.getElementById('node-toggle').addEventListener('click', toggleNodeInfo);
-            
             // 刷新节点信息
             document.getElementById('refresh-node-info').addEventListener('click', fetchNodeInfo);
             
             // 初始获取节点信息
-            fetchNodeInfo(false); // 初始获取但不自动显示
+            fetchNodeInfo();
         });
         
         // 加载主题偏好
@@ -1386,17 +1406,11 @@
         }
         
         // 获取节点信息
-        async function fetchNodeInfo(showPanel = true) {
+        async function fetchNodeInfo() {
             const nodeInfoContent = document.getElementById('node-info-content');
             nodeInfoContent.innerHTML = '<div class="node-info-loading">正在获取节点信息...</div>';
             
             try {
-                // 打开节点信息面板
-                if (showPanel) {
-                    document.getElementById('node-info').classList.add('visible');
-                    nodeInfoVisible = true;
-                }
-                
                 // 获取IP信息
                 const ipResponse = await fetch('https://api.ipify.org?format=json');
                 const ipData = await ipResponse.json();
@@ -1485,7 +1499,7 @@
                         <span class="node-info-label">错误:</span>
                         <span class="node-info-value">获取节点信息失败: ${error.message}</span>
                     </div>
-                    <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="fetchNodeInfo(true)">重试</button>
+                    <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="fetchNodeInfo()">重试</button>
                 `;
             }
         }
@@ -1606,8 +1620,6 @@
             // 如果已有部分结果，则显示
             if (validationResults.length > 0) {
                 displayResults();
-                document.getElementById('export-valid-btn').disabled = false;
-                document.getElementById('export-all-btn').disabled = false;
                 document.getElementById('export-valid-results-btn').disabled = false;
                 document.getElementById('export-all-results-btn').disabled = false;
             }
@@ -1731,8 +1743,6 @@
             document.getElementById('results-container').style.display = 'none';
             document.getElementById('results-body').innerHTML = '';
             validationResults = [];
-            document.getElementById('export-valid-btn').disabled = true;
-            document.getElementById('export-all-btn').disabled = true;
             document.getElementById('export-valid-results-btn').disabled = true;
             document.getElementById('export-all-results-btn').disabled = true;
             
@@ -1950,8 +1960,6 @@
             displayResults();
             
             // 启用导出按钮
-            document.getElementById('export-valid-btn').disabled = false;
-            document.getElementById('export-all-btn').disabled = false;
             document.getElementById('export-valid-results-btn').disabled = false;
             document.getElementById('export-all-results-btn').disabled = false;
         }
