@@ -7,21 +7,21 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔑</text></svg>" type="image/svg+xml">
     <style>
         :root {
-            --primary-color: #f06292; /* 粉色主色调 */
-            --primary-light: #ffb6c1; /* 浅粉色 */
-            --primary-dark: #d81b60; /* 深粉色 */
-            --secondary-color: #9c27b0; /* 紫色辅助色 */
-            --accent-color: #64b5f6; /* 蓝色强调色 */
-            --success-color: #66bb6a; /* 绿色成功提示 */
-            --error-color: #ef5350; /* 红色错误提示 */
-            --warning-color: #ffca28; /* 黄色警告提示 */
-            --bg-color: #fce4ec; /* 粉色背景 */
-            --bg-gradient: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%); /* 渐变背景 */
-            --card-bg: #ffffff; /* 卡片背景 */
-            --text-color: #424242; /* 文本颜色 */
-            --text-light: #757575; /* 浅色文本 */
-            --border-color: #f8bbd0; /* 边框颜色 */
-            --border-radius: 15px; /* 圆角半径 */
+            --primary-color: #EC407A; /* Material Pink 400 */
+            --primary-light: #F48FB1; /* Material Pink 200 */
+            --primary-dark: #D81B60; /* Material Pink 600 */
+            --secondary-color: #AB47BC; /* Material Purple 400 */
+            --accent-color: #42A5F5; /* Material Blue 400 */
+            --success-color: #66BB6A; /* Material Green 400 */
+            --error-color: #EF5350; /* Material Red 400 */
+            --warning-color: #FFA726; /* Material Orange 400 */
+            --bg-color: #FCE4EC; /* Material Pink 50 */
+            --bg-gradient: linear-gradient(135deg, #FCE4EC 0%, #F8BBD0 100%); /* Pink 50 to Pink 100 */
+            --card-bg: #ffffff; /* 白色卡片背景 */
+            --text-color: #424242; /* Material Grey 800 */
+            --text-light: #757575; /* Material Grey 600 */
+            --border-color: #F8BBD0; /* Material Pink 100 */
+            --border-radius: 12px; /* 圆角半径 */
             --box-shadow: 0 4px 20px rgba(236, 64, 122, 0.1); /* 阴影效果 */
             --font-family: 'Helvetica Neue', Arial, sans-serif;
             --transition: all 0.3s ease;
@@ -513,16 +513,41 @@
         }
         
         .results-container {
-            margin-top: 2.5rem;
-            display: none;
-            animation: slideUp 0.5s ease;
+            margin-top: 0;
+            display: block; /* 默认显示 */
+            animation: fadeIn 0.5s ease;
+            height: 100%;
+            overflow-y: auto;
+            border-radius: var(--border-radius);
+            background-color: var(--card-bg);
+            box-shadow: var(--box-shadow);
+            border: 1px solid var(--border-color);
+            flex: 1;
+        }
+        
+        /* 结果表为空时显示提示信息 */
+        .results-empty {
+            padding: 30px;
+            text-align: center;
+            color: var(--text-light);
+            font-style: italic;
         }
         
         .results-heading {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+        }
+        
+        .results-summary {
+            padding: 0 15px;
+        }
+        
+        .results-table-container {
+            padding: 0 15px 15px;
+            overflow-x: auto;
         }
         
         .results-heading h2 {
@@ -585,16 +610,10 @@
             font-weight: 600;
         }
         
-        .results-table-container {
-            overflow-x: auto;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        
         .results-table {
             width: 100%;
             border-collapse: collapse;
-            border: 1px solid #f8bbd0;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             overflow: hidden;
             table-layout: fixed; /* 为宽屏优化表格布局 */
@@ -678,20 +697,27 @@
             .two-column-layout {
                 display: flex;
                 gap: 20px; /* 减小两列间隔 */
-                align-items: flex-start;
+                align-items: stretch; /* 确保等高 */
+                height: calc(100vh - 150px); /* 减去头部和边距 */
+                min-height: 500px; /* 设置最小高度 */
             }
             
-            .input-column {
-                flex: 0.6; /* 缩小输入区域的比例 */
+            .input-column, .results-column {
+                flex: 1; /* 均等分配空间 */
+                display: flex;
+                flex-direction: column;
             }
             
-            .results-column {
-                flex: 0.4; /* 增大结果区域的比例 */
-                margin-top: 0;
+            .card, .results-container {
+                flex: 1; /* 占满可用空间 */
+                overflow-y: auto; /* 允许内容滚动 */
+                display: flex;
+                flex-direction: column;
             }
             
             .results-container {
                 margin-top: 0;
+                padding: 0; /* 移除内边距，由内部元素控制 */
             }
         }
         
@@ -837,7 +863,7 @@
             justify-content: center;
             width: 40px;
             height: 40px;
-            background-color: var(--card-bg);
+            background-color: var(--bg-color); /* 使用背景色 */
             border-radius: 50%;
             box-shadow: var(--box-shadow);
             cursor: pointer;
@@ -847,7 +873,8 @@
         
         .theme-toggle:hover {
             transform: translateY(-2px) rotate(15deg);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 6px 15px rgba(236, 64, 122, 0.2);
+            background-color: var(--primary-light);
         }
         
         .theme-toggle-icon {
@@ -866,7 +893,7 @@
             justify-content: center;
             width: 40px;
             height: 40px;
-            background-color: var(--card-bg);
+            background-color: var(--bg-color); /* 使用背景色 */
             border-radius: 50%;
             box-shadow: var(--box-shadow);
             cursor: pointer;
@@ -876,7 +903,8 @@
         
         .node-toggle:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 6px 15px rgba(236, 64, 122, 0.2);
+            background-color: var(--primary-light);
         }
         
         .node-toggle-icon {
@@ -1077,6 +1105,34 @@
         .dark-mode .theme-toggle {
             background-color: #3B4252;
             border-color: #4C566A;
+        }
+        
+        .results-heading {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .results-heading h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--primary-dark);
+        }
+        
+        /* 结果表为空时的提示样式 */
+        .results-empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-light);
+            font-style: italic;
+            border-top: 1px solid var(--border-color);
+            margin-top: 15px;
         }
     </style>
 </head>
@@ -1296,7 +1352,7 @@
                     </div>
                     
                     <div class="results-table-container">
-                        <table class="results-table">
+                        <table class="results-table" id="results-table">
                             <thead>
                                 <tr>
                                     <th>密钥</th>
@@ -1308,6 +1364,9 @@
                                 <!-- 结果会被动态添加到这里 -->
                             </tbody>
                         </table>
+                        <div class="results-empty" id="results-empty">
+                            暂无验证结果，请在左侧输入API密钥并点击"验证密钥"按钮
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1407,6 +1466,9 @@
             // 加载主题设置
             loadThemePreference();
             
+            // 初始化结果区域为空状态
+            initializeEmptyResults();
+            
             // 切换API类型
             document.querySelectorAll('.api-type-btn').forEach(button => {
                 button.addEventListener('click', function() {
@@ -1449,12 +1511,12 @@
                 document.getElementById('keys-input').value = '';
                 document.getElementById('file-input').value = '';
                 document.getElementById('file-name').textContent = '未选择文件';
-                document.getElementById('results-container').style.display = 'none';
+                // document.getElementById('results-container').style.display = 'none'; // 移除这一行
                 document.getElementById('progress-container').style.display = 'none';
                 validationResults = [];
-                // 禁用导出按钮
-                document.getElementById('export-valid-results-btn').disabled = true;
-                document.getElementById('export-all-results-btn').disabled = true;
+                
+                // 重置为空结果状态
+                initializeEmptyResults();
             });
             
             // 结果区域导出按钮
@@ -1529,6 +1591,25 @@
             // 节点信息按钮点击事件
             document.getElementById('node-toggle').addEventListener('click', toggleNodeInfo);
         });
+        
+        // 初始化空结果状态
+        function initializeEmptyResults() {
+            // 更新统计数据显示为0
+            document.getElementById('total-count').textContent = '0';
+            document.getElementById('valid-count').textContent = '0';
+            document.getElementById('invalid-count').textContent = '0';
+            
+            // 清空结果表格
+            document.getElementById('results-body').innerHTML = '';
+            
+            // 显示空结果提示
+            document.getElementById('results-empty').style.display = 'block';
+            document.getElementById('results-table').style.display = 'none';
+            
+            // 禁用导出按钮
+            document.getElementById('export-valid-results-btn').disabled = true;
+            document.getElementById('export-all-results-btn').disabled = true;
+        }
         
         // 加载主题偏好
         function loadThemePreference() {
@@ -1817,6 +1898,9 @@
                 displayResults();
                 document.getElementById('export-valid-results-btn').disabled = false;
                 document.getElementById('export-all-results-btn').disabled = false;
+            } else {
+                // 没有结果，显示空状态
+                initializeEmptyResults();
             }
         }
         
@@ -1935,11 +2019,14 @@
             }
             
             // 重置UI和状态
-            document.getElementById('results-container').style.display = 'none';
             document.getElementById('results-body').innerHTML = '';
             validationResults = [];
             document.getElementById('export-valid-results-btn').disabled = true;
             document.getElementById('export-all-results-btn').disabled = true;
+            
+            // 显示空结果状态
+            document.getElementById('results-empty').style.display = 'block';
+            document.getElementById('results-table').style.display = 'none';
             
             validationStats = {
                 valid: 0,
@@ -2540,7 +2627,14 @@
         
         // 显示验证结果
         function displayResults() {
-            if (validationResults.length === 0) return;
+            if (validationResults.length === 0) {
+                initializeEmptyResults();
+                return;
+            }
+            
+            // 隐藏空结果提示，显示结果表格
+            document.getElementById('results-empty').style.display = 'none';
+            document.getElementById('results-table').style.display = 'table';
             
             // 统计数据
             const total = validationResults.length;
@@ -2582,9 +2676,6 @@
                 
                 tableBody.appendChild(row);
             });
-            
-            // 显示结果容器
-            document.getElementById('results-container').style.display = 'block';
         }
         
         // 隐藏部分API密钥字符
