@@ -9,7 +9,13 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from src.models.api_key import OpenAIKeyValidator
 from src.models.claude_key import ClaudeKeyValidator
 from src.models.gemini_key import GeminiKeyValidator
-from src.models.openai_like_key import OpenAILikeKeyValidator
+
+# 尝试导入OpenAILikeKeyValidator，如果不存在则忽略
+try:
+    from src.models.openai_like_key import OpenAILikeKeyValidator
+    HAS_OPENAI_LIKE = True
+except ImportError:
+    HAS_OPENAI_LIKE = False
 
 # Create blueprint
 api_key_bp = Blueprint('api_key', __name__)
@@ -22,8 +28,11 @@ API_VALIDATORS = {
     'openai': OpenAIKeyValidator,
     'claude': ClaudeKeyValidator,
     'gemini': GeminiKeyValidator,
-    'openai_like': OpenAILikeKeyValidator
 }
+
+# 如果OpenAILikeKeyValidator可用，则添加到验证器映射中
+if HAS_OPENAI_LIKE:
+    API_VALIDATORS['openai_like'] = OpenAILikeKeyValidator
 
 @api_key_bp.route('/validate', methods=['POST'])
 def validate_keys():
@@ -77,7 +86,7 @@ def validate_keys():
         # 对于 openai_like 类型，获取自定义参数
         custom_api_url = None
         custom_model_name = None
-        if api_type == 'openai_like':
+        if api_type == 'openai_like' and HAS_OPENAI_LIKE:
             custom_api_url = request.form.get('custom_api_url')
             custom_model_name = request.form.get('custom_model_name')
             if not custom_api_url or not custom_model_name:
@@ -91,7 +100,7 @@ def validate_keys():
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             try:
-                if api_type == 'openai_like':
+                if api_type == 'openai_like' and HAS_OPENAI_LIKE:
                     return loop.run_until_complete(validator.validate_keys_batch(api_keys, batch_size, custom_api_url, custom_model_name))
                 else:
                     return loop.run_until_complete(validator.validate_keys_batch(api_keys, batch_size))
@@ -151,7 +160,11 @@ def export_keys():
         if results is None:
             return jsonify({'error': '未提供结果数据'}), 400
 
-        validator = API_VALIDATORS.get(api_type, OpenAIKeyValidator) # Fallback to OpenAI for safety
+        # 确保API类型存在
+        if api_type not in API_VALIDATORS:
+            api_type = 'openai'  # 回退到默认类型
+            
+        validator = API_VALIDATORS.get(api_type)
         
         # 根据导出类型筛选结果
         if export_type == 'valid':
