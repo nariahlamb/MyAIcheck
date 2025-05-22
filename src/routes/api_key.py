@@ -7,8 +7,9 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from src.models.api_key import OpenAIKeyValidator
-from src.models.claude_key import ClaudeKeyValidator 
+from src.models.claude_key import ClaudeKeyValidator
 from src.models.gemini_key import GeminiKeyValidator
+from src.models.openai_like_key import OpenAILikeKeyValidator
 
 # Create blueprint
 api_key_bp = Blueprint('api_key', __name__)
@@ -20,7 +21,8 @@ executor = ThreadPoolExecutor(max_workers=3)
 API_VALIDATORS = {
     'openai': OpenAIKeyValidator,
     'claude': ClaudeKeyValidator,
-    'gemini': GeminiKeyValidator
+    'gemini': GeminiKeyValidator,
+    'openai_like': OpenAILikeKeyValidator
 }
 
 @api_key_bp.route('/validate', methods=['POST'])
@@ -71,6 +73,17 @@ def validate_keys():
             
         # 调整批处理大小，避免并发过多
         batch_size = min(3, max(1, len(api_keys) // 50))  # Dynamic batch sizing
+
+        # 对于 openai_like 类型，获取自定义参数
+        custom_api_url = None
+        custom_model_name = None
+        if api_type == 'openai_like':
+            custom_api_url = request.form.get('custom_api_url')
+            custom_model_name = request.form.get('custom_model_name')
+            if not custom_api_url or not custom_model_name:
+                return jsonify({'error': '自定义API URL和模型名称是必填项。'}), 400
+            if not custom_api_url.endswith('/v1'):
+                return jsonify({'error': '自定义API URL必须以 /v1 结尾。'}), 400
         
         # 使用同步方式处理，增加超时控制
         def run_validation():
@@ -78,7 +91,10 @@ def validate_keys():
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             try:
-                return loop.run_until_complete(validator.validate_keys_batch(api_keys, batch_size))
+                if api_type == 'openai_like':
+                    return loop.run_until_complete(validator.validate_keys_batch(api_keys, batch_size, custom_api_url, custom_model_name))
+                else:
+                    return loop.run_until_complete(validator.validate_keys_batch(api_keys, batch_size))
             finally:
                 loop.close()
         
@@ -97,7 +113,7 @@ def validate_keys():
             return jsonify({'error': f'验证失败: {str(e)}'}), 500
         
         # 如果所有密钥都是网络错误，添加特殊提示
-        all_network_errors = all(r.get('error_code') in ['NETWORK_ERROR', 'CONNECTION_ERROR'] for r in results)
+        all_network_errors = all(r.get('error_code') in ['NETWORK_ERROR', 'CONNECTION_ERROR', 'TIMEOUT'] for r in results)
         
         # Return results
         response_data = {
@@ -123,32 +139,40 @@ def export_keys():
     Endpoint to export validation results as CSV
     """
     try:
-        # Get export options
-        include_details = request.form.get('include_details', 'true') == 'true'
-        
-        # Get results from request
-        results_data = request.json
-        if not results_data or 'results' not in results_data:
+        # 获取请求体中的JSON数据
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': '请求体不能为空'}), 400
+
+        results = data.get('results')
+        export_type = data.get('export_type', 'all') # 'all' or 'valid'
+        api_type = data.get('api_type', 'openai')
+
+        if results is None:
             return jsonify({'error': '未提供结果数据'}), 400
-            
-        results = results_data['results']
+
+        validator = API_VALIDATORS.get(api_type, OpenAIKeyValidator) # Fallback to OpenAI for safety
         
-        # Generate CSV
-        api_type = request.form.get('api_type', 'openai')
-        validator = API_VALIDATORS.get(api_type, OpenAIKeyValidator)
-        csv_content = validator.generate_csv(results, include_details)
+        # 根据导出类型筛选结果
+        if export_type == 'valid':
+            results_to_export = [r for r in results if r.get('valid')]
+            # 如果只导出有效密钥，则不包含错误详情
+            csv_content = validator.generate_csv(results_to_export, include_details=False)
+        else: # export_type == 'all'
+            csv_content = validator.generate_csv(results, include_details=True)
         
         # Create in-memory file
         buffer = io.BytesIO()
-        buffer.write(csv_content.encode('utf-8'))
+        buffer.write(csv_content.encode('utf-8-sig')) # 使用utf-8-sig确保BOM头
         buffer.seek(0)
         
         # Send file
+        filename = f"{api_type}_keys_validation_{export_type}.csv"
         return send_file(
             buffer,
             as_attachment=True,
-            download_name=f'{api_type}_api_keys_validation.csv',
-            mimetype='text/csv'
+            download_name=filename,
+            mimetype='text/csv; charset=utf-8-sig'
         )
     except Exception as e:
         return jsonify({'error': f'导出失败: {str(e)}'}), 500

@@ -426,7 +426,7 @@
             
             <div class="api-settings" id="gemini-settings" style="display: none;">
                 <p><strong>验证 Gemini API 密钥</strong> - 将测试 gemini-2.5-flash-preview-04-17 模型</p>
-            </div>
+                </div>
             
             <div class="tabs">
                 <div class="tab active" data-tab="text-input">文本输入</div>
@@ -456,7 +456,7 @@
                 </div>
                 <div class="progress-bar-container">
                     <div class="progress-bar" id="progress-bar"></div>
-                </div>
+            </div>
             </div>
         </div>
         
@@ -476,7 +476,7 @@
                     <h3>无效</h3>
                     <p id="invalid-count">0</p>
                 </div>
-            </div>
+        </div>
             
             <table class="results-table">
                 <thead>
@@ -493,7 +493,7 @@
             
             <div class="export-container">
                 <button id="export-btn" class="btn">导出结果</button>
-            </div>
+    </div>
         </div>
     </div>
     
@@ -960,7 +960,7 @@
             tableBody.innerHTML = '';
             
             validationResults.forEach(result => {
-                const row = document.createElement('tr');
+            const row = document.createElement('tr');
                 
                 // 密钥单元格（隐藏部分字符）
                 const keyCell = document.createElement('td');
@@ -992,7 +992,7 @@
         }
         
         // 隐藏部分API密钥字符
-        function maskApiKey(key) {
+    function maskApiKey(key) {
             if (!key || key.length < 8) return key;
             
             const firstFour = key.slice(0, 4);
@@ -1004,8 +1004,8 @@
         function exportResults() {
             if (validationResults.length === 0) {
                 alert('没有结果可导出');
-                return;
-            }
+            return;
+        }
             
             // 创建CSV内容
             let csvContent = 'API密钥,状态,错误代码,错误信息\n';
@@ -1041,7 +1041,7 @@
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             return `${year}${month}${day}`;
-        }
+    }
     </script>
 </body>
 </html>
