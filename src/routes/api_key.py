@@ -2,15 +2,19 @@
 Routes for the OpenAI API key validator application
 """
 from flask import Blueprint, request, jsonify, render_template, send_file
-import asyncio
 import io
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from src.models.api_key import OpenAIKeyValidator
 
 # Create blueprint
 api_key_bp = Blueprint('api_key', __name__)
 
+# 创建线程池
+executor = ThreadPoolExecutor(max_workers=10)
+
 @api_key_bp.route('/validate', methods=['POST'])
-async def validate_keys():
+def validate_keys():
     """
     Endpoint to validate OpenAI API keys
     """
@@ -43,7 +47,16 @@ async def validate_keys():
         
     # Validate keys with appropriate batch size based on count
     batch_size = min(20, max(5, len(api_keys) // 50))  # Dynamic batch sizing
-    results = await OpenAIKeyValidator.validate_keys_batch(api_keys, batch_size)
+    
+    # 使用同步方式处理
+    def run_validation():
+        import asyncio
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        return loop.run_until_complete(OpenAIKeyValidator.validate_keys_batch(api_keys, batch_size))
+    
+    # 在线程池中执行异步操作
+    results = executor.submit(run_validation).result()
     
     # Return results
     return jsonify({
@@ -54,7 +67,7 @@ async def validate_keys():
     })
 
 @api_key_bp.route('/export', methods=['POST'])
-async def export_keys():
+def export_keys():
     """
     Endpoint to export validation results as CSV
     """

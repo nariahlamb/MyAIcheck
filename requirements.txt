@@ -1,8 +1,12 @@
-Flask
-gunicorn
-asyncio
+Flask==2.0.1
+gunicorn==20.1.0
 typing_extensions==4.13.2
+aiohttp==3.7.4
+Werkzeug==2.0.2
+MarkupSafe==2.0.1
+Jinja2==3.0.3
+itsdangerous==2.0.1
+click==8.0.3
 # The following dependencies were removed as they don't appear to be used by the main Flask application:
 # aiohappyeyeballs==2.6.1
-# aiohttp==3.11.18
 # 其余依赖如csv、io、json、os、sys、typing为Python标准库，无需额外声明

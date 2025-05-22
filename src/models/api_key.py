@@ -39,13 +39,14 @@ class OpenAIKeyValidator:
         }
         
         try:
-            async with session.get(OpenAIKeyValidator.API_URL, headers=headers) as response:
-                if response.status == 200:
-                    result["valid"] = True
-                else:
-                    error_data = await response.json()
-                    result["error_code"] = str(response.status)
-                    result["error_message"] = error_data.get("error", {}).get("message", "Unknown error")
+            # 使用aiohttp 3.7.4兼容语法
+            response = await session.get(OpenAIKeyValidator.API_URL, headers=headers)
+            if response.status == 200:
+                result["valid"] = True
+            else:
+                error_data = await response.json()
+                result["error_code"] = str(response.status)
+                result["error_message"] = error_data.get("error", {}).get("message", "Unknown error")
         except aiohttp.ClientError as e:
             result["error_code"] = "CLIENT_ERROR"
             result["error_message"] = str(e)
@@ -77,7 +78,8 @@ class OpenAIKeyValidator:
             batch = api_keys[i:i+batch_size]
             
             # Process batch concurrently
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as session:
+            timeout = aiohttp.ClientTimeout(total=30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
                 tasks = [OpenAIKeyValidator.validate_single_key(session, key) for key in batch]
                 batch_results = await asyncio.gather(*tasks)
                 results.extend(batch_results)

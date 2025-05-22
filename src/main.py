@@ -3,31 +3,23 @@ Main entry point for the Flask application
 """
 import sys
 import os
-import asyncio
 from flask import Flask, render_template
 from src.routes.api_key import api_key_bp
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-# Create Flask app
-app = Flask(__name__)
+# Create Flask app with correct static folder
+app = Flask(__name__, 
+           static_folder='static',
+           template_folder='templates')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload size
 
 # Register blueprints
 app.register_blueprint(api_key_bp)
 
-# Configure for async support
-async_mode = None
-try:
-    import eventlet
-    async_mode = 'eventlet'
-except ImportError:
-    try:
-        import gevent
-        async_mode = 'gevent'
-    except ImportError:
-        async_mode = 'threading'
+# 使用threading作为默认异步模式
+async_mode = 'threading'
 
 # Main route
 @app.route('/')
