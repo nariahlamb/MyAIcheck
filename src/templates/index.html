@@ -7,22 +7,22 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔑</text></svg>" type="image/svg+xml">
     <style>
         :root {
-            --primary-color: #EC407A; /* Material Pink 400 */
-            --primary-light: #F48FB1; /* Material Pink 200 */
-            --primary-dark: #D81B60; /* Material Pink 600 */
-            --secondary-color: #AB47BC; /* Material Purple 400 */
-            --accent-color: #42A5F5; /* Material Blue 400 */
-            --success-color: #66BB6A; /* Material Green 400 */
-            --error-color: #EF5350; /* Material Red 400 */
-            --warning-color: #FFA726; /* Material Orange 400 */
-            --bg-color: #FCE4EC; /* Material Pink 50 */
-            --bg-gradient: linear-gradient(135deg, #FCE4EC 0%, #F8BBD0 100%); /* Pink 50 to Pink 100 */
-            --card-bg: #ffffff; /* 白色卡片背景 */
-            --text-color: #424242; /* Material Grey 800 */
-            --text-light: #757575; /* Material Grey 600 */
-            --border-color: #F8BBD0; /* Material Pink 100 */
+            --primary-color: #D88CA0; /* 降低饱和度的粉色 */
+            --primary-light: #E8B0BD; /* 更柔和的浅粉色 */
+            --primary-dark: #B56B80; /* 更柔和的深粉色 */
+            --secondary-color: #9D79AC; /* 更柔和的紫色辅助色 */
+            --accent-color: #74A4CD; /* 更柔和的蓝色强调色 */
+            --success-color: #7BAE80; /* 更柔和的绿色 */
+            --error-color: #D77A77; /* 更柔和的红色 */
+            --warning-color: #E0B883; /* 更柔和的黄色 */
+            --bg-color: #F6E9EE; /* 更浅的背景色 */
+            --bg-gradient: linear-gradient(135deg, #F6E9EE 0%, #F0DCE4 100%); /* 更柔和的渐变背景 */
+            --card-bg: #FFF5F8; /* 微浅粉色卡片背景，不再是纯白色 */
+            --text-color: #5B5B5B; /* 更柔和的文本颜色 */
+            --text-light: #8A8A8A; /* 更柔和的浅色文本 */
+            --border-color: #E8D0D8; /* 更柔和的边框颜色 */
             --border-radius: 12px; /* 圆角半径 */
-            --box-shadow: 0 4px 20px rgba(236, 64, 122, 0.1); /* 阴影效果 */
+            --box-shadow: 0 4px 20px rgba(216, 140, 160, 0.08); /* 更柔和的阴影效果 */
             --font-family: 'Helvetica Neue', Arial, sans-serif;
             --transition: all 0.3s ease;
         }
@@ -148,15 +148,15 @@
             margin: 15px 0; /* 减小上下边距 */
             padding: 12px; /* 减小内边距 */
             border-radius: 10px;
-            background-color: #fff5f8;
+            background-color: #F0E3E9; /* 更柔和的背景色 */
             border: 1px dashed var(--primary-light);
             animation: fadeIn 0.5s ease;
         }
         
         .custom-settings {
             display: none;
-            background-color: #f3e5f5;
-            border-color: #ce93d8;
+            background-color: #EEE5F0; /* 更柔和的背景色 */
+            border-color: #D4BCD9; /* 更柔和的边框色 */
             padding: 15px;
             border-radius: 10px;
             margin-top: 15px;
@@ -222,7 +222,7 @@
             display: flex;
             align-items: center;
             margin-bottom: 15px; /* 减小下边距 */
-            background-color: #fff5f8;
+            background-color: #F0E3E9; /* 更柔和的背景色 */
             padding: 10px 15px;
             border-radius: 8px;
         }
@@ -582,19 +582,19 @@
         }
         
         .summary-total {
-            background-color: #e1f5fe;
-            border: 1px solid #b3e5fc;
+            background-color: #E3EEF6; /* 更柔和的蓝色 */
+            border: 1px solid #C5DFF0; /* 更柔和的边框 */
         }
         
         .summary-valid {
-            background-color: #e8f5e9;
-            border: 1px solid #c8e6c9;
+            background-color: #E4F1E5; /* 更柔和的绿色 */
+            border: 1px solid #C9E6CA; /* 更柔和的边框 */
             color: var(--success-color);
         }
         
         .summary-invalid {
-            background-color: #ffebee;
-            border: 1px solid #ffcdd2;
+            background-color: #F2E5E5; /* 更柔和的红色 */
+            border: 1px solid #EACBCB; /* 更柔和的边框 */
             color: var(--error-color);
         }
         
@@ -626,17 +626,17 @@
         }
         
         .results-table th {
-            background-color: #fce4ec;
+            background-color: #F0E3E9; /* 更柔和的表头背景 */
             color: var(--primary-dark);
             font-weight: 600;
         }
         
         .results-table tr:nth-child(even) {
-            background-color: #fff9fb;
+            background-color: #FAF2F5; /* 更柔和的斑马纹 */
         }
         
         .results-table tr:hover {
-            background-color: #fce4ec;
+            background-color: #F0E3E9; /* 更柔和的hover背景 */
         }
         
         .results-table th:nth-child(1),
@@ -778,7 +778,7 @@
         }
         
         .results-table tr:hover {
-            background-color: #fce4ec;
+            background-color: #F0E3E9; /* 更柔和的hover背景 */
         }
         
         .dark-mode .results-table th {
@@ -1148,7 +1148,7 @@
         .batch-size-container {
             margin: 15px 0;
             padding: 10px 15px;
-            background-color: #fff5f8;
+            background-color: #F0E3E9; /* 更柔和的背景色 */
             border-radius: 8px;
             border: 1px dashed var(--primary-light);
             animation: fadeIn 0.5s ease;
@@ -1292,7 +1292,7 @@
         .concurrency-container {
             margin: 15px 0;
             padding: 10px 15px;
-            background-color: #fff5f8;
+            background-color: #F0E3E9; /* 更柔和的背景色 */
             border-radius: 8px;
             border: 1px dashed var(--primary-light);
             animation: fadeIn 0.5s ease;
@@ -1439,6 +1439,49 @@
         
         .dark-mode .batch-size-info {
             background-color: #5E81AC;
+        }
+        
+        /* 自定义滚动条样式 */
+        /* Webkit浏览器 (Chrome, Safari, Edge) */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+            background-color: transparent;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background-color: transparent;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(240, 98, 146, 0.3);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(240, 98, 146, 0.5);
+        }
+        
+        /* Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(240, 98, 146, 0.3) transparent;
+        }
+        
+        /* 暗色模式滚动条 */
+        .dark-mode::-webkit-scrollbar-thumb {
+            background-color: rgba(136, 192, 208, 0.3);
+        }
+        
+        .dark-mode::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(136, 192, 208, 0.5);
+        }
+        
+        .dark-mode * {
+            scrollbar-color: rgba(136, 192, 208, 0.3) transparent;
         }
     </style>
 </head>
