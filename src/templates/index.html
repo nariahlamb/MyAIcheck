@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAI API密钥批量验证工具</title>
+    <style>
+        body {
+            font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+            background: #f5f6fa;
+            margin: 0;
+            padding: 0;
+            color: #222;
+        }
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(60,60,60,0.08);
+            padding: 32px 28px 24px 28px;
+        }
+        h1 {
+            font-size: 2.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: 0.01em;
+        }
+        .desc {
+            color: #888;
+            margin-bottom: 24px;
+        }
+        .input-group {
+            margin-bottom: 18px;
+        }
+        .input-label {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .radio-group {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 10px;
+        }
+        .radio {
+            accent-color: #007aff;
+        }
+        textarea, input[type="file"] {
+            width: 100%;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            background: #fafbfc;
+            transition: border 0.2s;
+        }
+        textarea:focus, input[type="file"]:focus {
+            border: 1.5px solid #007aff;
+            outline: none;
+        }
+        .btn {
+            background: #007aff;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #005ecb;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 18px;
+            background: #e9ecef;
+            border-radius: 8px;
+            margin: 18px 0 10px 0;
+            overflow: hidden;
+        }
+        .progress-inner {
+            height: 100%;
+            background: linear-gradient(90deg, #007aff 60%, #00c6fb 100%);
+            border-radius: 8px;
+            transition: width 0.3s;
+        }
+        .stats {
+            display: flex;
+            gap: 18px;
+            margin-bottom: 10px;
+        }
+        .stat-card {
+            flex: 1;
+            background: #f7f8fa;
+            border-radius: 10px;
+            padding: 14px 0;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(60,60,60,0.04);
+        }
+        .stat-title {
+            color: #888;
+            font-size: 0.98rem;
+            margin-bottom: 2px;
+        }
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            margin-top: 18px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 8px 10px;
+            text-align: left;
+        }
+        th {
+            background: #f5f6fa;
+            font-weight: 500;
+        }
+        tr:nth-child(even) {
+            background: #fafbfc;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .badge-valid {
+            background: #34c759;
+            color: #fff;
+        }
+        .badge-invalid {
+            background: #ff3b30;
+            color: #fff;
+        }
+        .badge-warn {
+            background: #ffcc00;
+            color: #222;
+        }
+        .export-btns {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .export-btn {
+            background: #f1f2f6;
+            color: #007aff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 18px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .export-btn:hover {
+            background: #e1e3e8;
+        }
+        .loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .loading-inner {
+            background: #fff;
+            border-radius: 12px;
+            padding: 32px 40px;
+            box-shadow: 0 4px 24px rgba(60,60,60,0.10);
+            text-align: center;
+        }
+        .loading-spinner {
+            width: 38px;
+            height: 38px;
+            border: 4px solid #e9ecef;
+            border-top: 4px solid #007aff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 18px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 600px) {
+            .container { padding: 16px 4px; }
+            .stats { flex-direction: column; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OpenAI API密钥批量验证</h1>
+        <div class="desc">支持1000+密钥，极速分片验证，结果可导出CSV</div>
+        <form id="validation-form">
+            <div class="input-group">
+                <span class="input-label">输入方式</span>
+                <div class="radio-group">
+                    <label><input type="radio" name="input-method" value="text" class="radio" checked> 粘贴/输入</label>
+                    <label><input type="radio" name="input-method" value="file" class="radio"> 上传文件</label>
+                </div>
+            </div>
+            <div class="input-group" id="text-input-container">
+                <span class="input-label">API密钥列表（每行一个）</span>
+                <textarea id="api-keys" rows="8" placeholder="sk-...\nsk-...\nsk-...\n"></textarea>
+            </div>
+            <div class="input-group" id="file-input-container" style="display:none;">
+                <span class="input-label">上传CSV或TXT文件</span>
+                <input type="file" id="api-keys-file" accept=".csv,.txt">
+            </div>
+            <button type="submit" class="btn" id="validate-btn">开始验证</button>
+        </form>
+        <div class="progress-bar" id="progress-bar" style="display:none;">
+            <div class="progress-inner" id="progress-inner" style="width:0%"></div>
+        </div>
+        <div class="stats" id="stats" style="display:none;">
+            <div class="stat-card">
+                <div class="stat-title">总计</div>
+                <div class="stat-value" id="total-count">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">有效</div>
+                <div class="stat-value" id="valid-count">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">无效</div>
+                <div class="stat-value" id="invalid-count">0</div>
+            </div>
+        </div>
+        <div class="export-btns" id="export-btns" style="display:none;">
+            <button class="export-btn" id="export-with-details">导出完整结果</button>
+            <button class="export-btn" id="export-keys-only">仅导出密钥</button>
+        </div>
+        <div class="table-wrap" id="results-table-wrap" style="display:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>API密钥</th>
+                        <th>状态</th>
+                        <th>错误码</th>
+                        <th>错误信息</th>
+                    </tr>
+                </thead>
+                <tbody id="results-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+    <div class="loading" id="loading-overlay" style="display:none;">
+        <div class="loading-inner">
+            <div class="loading-spinner"></div>
+            <div id="loading-message">正在验证API密钥...</div>
+        </div>
+    </div>
+    <script>
+    // 极简Mac风分片上传与UI逻辑
+    const form = document.getElementById('validation-form');
+    const textInputRadio = form.querySelector('input[value="text"]');
+    const fileInputRadio = form.querySelector('input[value="file"]');
+    const textInputContainer = document.getElementById('text-input-container');
+    const fileInputContainer = document.getElementById('file-input-container');
+    const apiKeysTextarea = document.getElementById('api-keys');
+    const apiKeysFile = document.getElementById('api-keys-file');
+    const validateBtn = document.getElementById('validate-btn');
+    const progressBar = document.getElementById('progress-bar');
+    const progressInner = document.getElementById('progress-inner');
+    const stats = document.getElementById('stats');
+    const totalCount = document.getElementById('total-count');
+    const validCount = document.getElementById('valid-count');
+    const invalidCount = document.getElementById('invalid-count');
+    const exportBtns = document.getElementById('export-btns');
+    const exportWithDetailsBtn = document.getElementById('export-with-details');
+    const exportKeysOnlyBtn = document.getElementById('export-keys-only');
+    const resultsTableWrap = document.getElementById('results-table-wrap');
+    const resultsTableBody = document.getElementById('results-table-body');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingMessage = document.getElementById('loading-message');
+
+    let validationResults = [];
+
+    textInputRadio.addEventListener('change', function() {
+        if (this.checked) {
+            textInputContainer.style.display = '';
+            fileInputContainer.style.display = 'none';
+        }
+    });
+    fileInputRadio.addEventListener('change', function() {
+        if (this.checked) {
+            textInputContainer.style.display = 'none';
+            fileInputContainer.style.display = '';
+        }
+    });
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        let keys = [];
+        if (textInputRadio.checked) {
+            keys = apiKeysTextarea.value.split('\n').map(x => x.trim()).filter(x => x);
+        } else {
+            if (!apiKeysFile.files[0]) {
+                alert('请选择文件');
+                return;
+            }
+            const file = apiKeysFile.files[0];
+            const text = await file.text();
+            keys = text.split(/\r?\n/).map(x => x.trim()).filter(x => x);
+        }
+        if (!keys.length) {
+            alert('请输入或上传至少一个API密钥');
+            return;
+        }
+        // 分片上传
+        const batchSize = 20;
+        const total = keys.length;
+        let done = 0;
+        let valid = 0;
+        let invalid = 0;
+        validationResults = [];
+        progressBar.style.display = '';
+        progressInner.style.width = '0%';
+        stats.style.display = 'none';
+        exportBtns.style.display = 'none';
+        resultsTableWrap.style.display = 'none';
+        resultsTableBody.innerHTML = '';
+        loadingOverlay.style.display = '';
+        loadingMessage.textContent = `正在分片验证${total}个密钥...`;
+        for (let i = 0; i < total; i += batchSize) {
+            const batch = keys.slice(i, i + batchSize);
+            try {
+                const resp = await fetch('/api/validate-keys', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ keys: batch, batch_size: batchSize })
+                });
+                if (!resp.ok) throw new Error('网络错误');
+                const data = await resp.json();
+                validationResults.push(...data.results);
+                valid += data.valid;
+                invalid += data.invalid;
+                done += batch.length;
+                // 更新进度
+                progressInner.style.width = `${Math.round(done / total * 100)}%`;
+                loadingMessage.textContent = `已完成${done}/${total}...`;
+            } catch (err) {
+                // 批量失败，全部记为未知错误
+                batch.forEach(key => {
+                    validationResults.push({ key, valid: false, error_code: 'NETWORK', error_message: '网络错误' });
+                    invalid++;
+                    done++;
+                });
+            }
+        }
+        // 展示统计
+        totalCount.textContent = total;
+        validCount.textContent = valid;
+        invalidCount.textContent = invalid;
+        stats.style.display = '';
+        exportBtns.style.display = '';
+        resultsTableWrap.style.display = '';
+        // 渲染表格
+        resultsTableBody.innerHTML = '';
+        validationResults.forEach((result, idx) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${idx + 1}</td>
+                <td>${maskApiKey(result.key)}</td>
+                <td>${result.valid ? '<span class="badge badge-valid">有效</span>' : '<span class="badge badge-invalid">无效</span>'}</td>
+                <td>${result.error_code || '-'}</td>
+                <td>${result.error_message || '-'}</td>`;
+            resultsTableBody.appendChild(row);
+        });
+        progressBar.style.display = 'none';
+        loadingOverlay.style.display = 'none';
+    });
+
+    function maskApiKey(key) {
+        if (!key) return '';
+        if (key.length > 12) return key.slice(0, 8) + '••••••••' + key.slice(-4);
+        return key;
+    }
+
+    exportWithDetailsBtn.addEventListener('click', function() {
+        exportResults(true);
+    });
+    exportKeysOnlyBtn.addEventListener('click', function() {
+        exportResults(false);
+    });
+    function exportResults(includeDetails) {
+        if (!validationResults.length) {
+            alert('没有可导出的结果');
+            return;
+        }
+        let csv = '';
+        if (includeDetails) {
+            csv += 'key,valid,error_code,error_message\n';
+            validationResults.forEach(r => {
+                csv += `"${r.key}",${r.valid},${r.error_code || ''},"${(r.error_message || '').replace(/"/g, '""')}"\n`;
+            });
+        } else {
+            csv += 'key\n';
+            validationResults.forEach(r => {
+                csv += `"${r.key}"\n`;
+            });
+        }
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'openai_api_keys_validation.csv';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 100);
+    }
+    </script>
+</body>
+</html>
