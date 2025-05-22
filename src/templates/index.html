@@ -26,6 +26,25 @@
             --transition: all 0.3s ease;
         }
         
+        /* 暗色模式变量 */
+        .dark-mode {
+            --primary-color: #ec407a; /* 深粉色主色调 */
+            --primary-light: #f48fb1; /* 中粉色 */
+            --primary-dark: #c2185b; /* 更深粉色 */
+            --secondary-color: #ba68c8; /* 亮紫色辅助色 */
+            --accent-color: #42a5f5; /* 亮蓝色强调色 */
+            --success-color: #4caf50; /* 绿色成功提示 */
+            --error-color: #f44336; /* 红色错误提示 */
+            --warning-color: #ffc107; /* 黄色警告提示 */
+            --bg-color: #212121; /* 深灰背景 */
+            --bg-gradient: linear-gradient(135deg, #212121 0%, #303030 100%); /* 暗色渐变背景 */
+            --card-bg: #303030; /* 卡片背景 */
+            --text-color: #f5f5f5; /* 文本颜色 */
+            --text-light: #bdbdbd; /* 浅色文本 */
+            --border-color: #424242; /* 边框颜色 */
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); /* 阴影效果 */
+        }
+        
         * {
             box-sizing: border-box;
             margin: 0;
@@ -707,6 +726,170 @@
                 justify-content: space-between;
             }
         }
+        
+        .results-table tr:hover {
+            background-color: #fce4ec;
+        }
+        
+        .dark-mode .results-table th {
+            background-color: #424242;
+            color: #f8bbd0;
+        }
+        
+        .dark-mode .results-table {
+            border-color: #424242;
+        }
+        
+        .dark-mode .results-table td {
+            border-bottom-color: #424242;
+        }
+        
+        .dark-mode .results-table tr:nth-child(even) {
+            background-color: #383838;
+        }
+        
+        .dark-mode .results-table tr:hover {
+            background-color: #505050;
+        }
+        
+        .results-table th:nth-child(1),
+        .results-table td:nth-child(1) {
+            width: 30%; /* 密钥列宽度 */
+            word-break: break-all;
+        }
+        
+        /* 主题切换按钮样式 */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background-color: var(--card-bg);
+            border-radius: 30px;
+            box-shadow: var(--box-shadow);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+        
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .theme-toggle-icon {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+        
+        .theme-toggle-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        
+        /* 节点信息区域样式 */
+        .node-info {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            width: 300px;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 15px;
+            z-index: 1000;
+            border: 1px solid var(--border-color);
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .node-info.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .node-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .node-info-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin: 0;
+        }
+        
+        .node-info-refresh {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: var(--transition);
+        }
+        
+        .node-info-refresh:hover {
+            color: var(--primary-color);
+            transform: scale(1.05);
+        }
+        
+        .node-info-item {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .node-info-label {
+            font-weight: 500;
+            color: var(--primary-color);
+            margin-right: 5px;
+        }
+        
+        .node-info-value {
+            color: var(--text-color);
+            word-break: break-all;
+        }
+        
+        .node-info-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            color: var(--text-light);
+        }
+        
+        /* 按钮标志 */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+        
+        .badge-warning {
+            background-color: var(--warning-color);
+            color: #5d4037;
+        }
+        
+        .badge-info {
+            background-color: var(--accent-color);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -715,6 +898,32 @@
             <h1>多平台 API 密钥验证工具</h1>
             <p class="description">批量验证 OpenAI、Claude、Gemini、Deepseek、XAI 和其他类 OpenAI 平台的 API 密钥</p>
         </header>
+        
+        <!-- 暗色模式切换按钮 -->
+        <div class="theme-toggle" id="theme-toggle">
+            <span class="theme-toggle-icon">🌙</span>
+            <span class="theme-toggle-text">暗色模式</span>
+        </div>
+        
+        <!-- 节点信息开关按钮 -->
+        <div class="theme-toggle" id="node-toggle" style="top: 70px;">
+            <span class="theme-toggle-icon">📡</span>
+            <span class="theme-toggle-text">节点信息</span>
+        </div>
+        
+        <!-- 节点信息区域 -->
+        <div class="node-info" id="node-info">
+            <div class="node-info-header">
+                <h3 class="node-info-title">节点信息</h3>
+                <button class="node-info-refresh" id="refresh-node-info">
+                    <span>刷新</span>
+                    <span>🔄</span>
+                </button>
+            </div>
+            <div id="node-info-content">
+                <div class="node-info-loading">正在获取节点信息...</div>
+            </div>
+        </div>
         
         <div class="two-column-layout">
             <div class="input-column">
@@ -938,6 +1147,8 @@
         };
         let startTime = null;
         let validationController = null; // AbortController用于取消验证
+        let isDarkMode = false; // 暗色模式状态
+        let nodeInfoVisible = false; // 节点信息显示状态
         
         // API验证端点配置
         const API_ENDPOINTS = {
@@ -1010,6 +1221,9 @@
         
         // 初始化页面
         document.addEventListener('DOMContentLoaded', function() {
+            // 加载主题设置
+            loadThemePreference();
+            
             // 切换API类型
             document.querySelectorAll('.api-type-btn').forEach(button => {
                 button.addEventListener('click', function() {
@@ -1108,7 +1322,267 @@
             document.getElementById('cancel-btn').addEventListener('click', function() {
                 cancelValidation();
             });
+            
+            // 暗色模式切换
+            document.getElementById('theme-toggle').addEventListener('click', toggleDarkMode);
+            
+            // 节点信息按钮
+            document.getElementById('node-toggle').addEventListener('click', toggleNodeInfo);
+            
+            // 刷新节点信息
+            document.getElementById('refresh-node-info').addEventListener('click', fetchNodeInfo);
+            
+            // 初始获取节点信息
+            fetchNodeInfo(false); // 初始获取但不自动显示
         });
+        
+        // 加载主题偏好
+        function loadThemePreference() {
+            // 尝试从localStorage读取主题设置
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                enableDarkMode();
+            }
+        }
+        
+        // 切换暗色模式
+        function toggleDarkMode() {
+            if (isDarkMode) {
+                disableDarkMode();
+            } else {
+                enableDarkMode();
+            }
+        }
+        
+        // 启用暗色模式
+        function enableDarkMode() {
+            document.body.classList.add('dark-mode');
+            document.getElementById('theme-toggle').querySelector('.theme-toggle-icon').textContent = '☀️';
+            document.getElementById('theme-toggle').querySelector('.theme-toggle-text').textContent = '亮色模式';
+            isDarkMode = true;
+            localStorage.setItem('theme', 'dark');
+        }
+        
+        // 禁用暗色模式
+        function disableDarkMode() {
+            document.body.classList.remove('dark-mode');
+            document.getElementById('theme-toggle').querySelector('.theme-toggle-icon').textContent = '🌙';
+            document.getElementById('theme-toggle').querySelector('.theme-toggle-text').textContent = '暗色模式';
+            isDarkMode = false;
+            localStorage.setItem('theme', 'light');
+        }
+        
+        // 切换节点信息显示
+        function toggleNodeInfo() {
+            const nodeInfo = document.getElementById('node-info');
+            if (nodeInfoVisible) {
+                nodeInfo.classList.remove('visible');
+                nodeInfoVisible = false;
+            } else {
+                nodeInfo.classList.add('visible');
+                nodeInfoVisible = true;
+                fetchNodeInfo(); // 获取最新节点信息
+            }
+        }
+        
+        // 获取节点信息
+        async function fetchNodeInfo(showPanel = true) {
+            const nodeInfoContent = document.getElementById('node-info-content');
+            nodeInfoContent.innerHTML = '<div class="node-info-loading">正在获取节点信息...</div>';
+            
+            try {
+                // 打开节点信息面板
+                if (showPanel) {
+                    document.getElementById('node-info').classList.add('visible');
+                    nodeInfoVisible = true;
+                }
+                
+                // 获取IP信息
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                const ip = ipData.ip;
+                
+                // 获取详细IP数据
+                const geoResponse = await fetch(`https://ipapi.co/${ip}/json/`);
+                const geoData = await geoResponse.json();
+                
+                // 获取浏览器信息
+                const browserInfo = {
+                    userAgent: navigator.userAgent,
+                    language: navigator.language,
+                    platform: navigator.platform,
+                    vendor: navigator.vendor || 'Unknown',
+                    cookiesEnabled: navigator.cookieEnabled,
+                    doNotTrack: navigator.doNotTrack || 'Unknown',
+                    connection: navigator.connection ? {
+                        effectiveType: navigator.connection.effectiveType,
+                        downlink: navigator.connection.downlink,
+                        rtt: navigator.connection.rtt,
+                        saveData: navigator.connection.saveData
+                    } : 'Unavailable'
+                };
+                
+                // 构建信息HTML
+                let infoHTML = `
+                    <div class="node-info-item">
+                        <span class="node-info-label">IP:</span>
+                        <span class="node-info-value">${ip}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">地区:</span>
+                        <span class="node-info-value">${geoData.country_name || 'Unknown'} (${geoData.country_code || 'N/A'})</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">城市:</span>
+                        <span class="node-info-value">${geoData.city || 'Unknown'}, ${geoData.region || 'Unknown'}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">ISP:</span>
+                        <span class="node-info-value">${geoData.org || 'Unknown'}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">时区:</span>
+                        <span class="node-info-value">${geoData.timezone || 'Unknown'}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">ASN:</span>
+                        <span class="node-info-value">${geoData.asn || 'Unknown'}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">IP类型:</span>
+                        <span class="node-info-value">${getIpType(geoData)}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">可信度:</span>
+                        <span class="node-info-value">${getTrustLevel(geoData)} ${getTrustBadge(geoData)}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">节点等级:</span>
+                        <span class="node-info-value">${getNodeLevel(geoData)} ${getNodeBadge(geoData)}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">浏览器:</span>
+                        <span class="node-info-value">${getBrowserName(browserInfo.userAgent)}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">操作系统:</span>
+                        <span class="node-info-value">${getOSName(browserInfo.userAgent)}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">语言:</span>
+                        <span class="node-info-value">${browserInfo.language}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">更新时间:</span>
+                        <span class="node-info-value">${new Date().toLocaleString()}</span>
+                    </div>
+                `;
+                
+                nodeInfoContent.innerHTML = infoHTML;
+            } catch (error) {
+                nodeInfoContent.innerHTML = `
+                    <div class="node-info-item">
+                        <span class="node-info-label">错误:</span>
+                        <span class="node-info-value">获取节点信息失败: ${error.message}</span>
+                    </div>
+                    <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="fetchNodeInfo(true)">重试</button>
+                `;
+            }
+        }
+        
+        // 获取IP类型
+        function getIpType(geoData) {
+            if (!geoData) return 'Unknown';
+            
+            if (geoData.country_code === 'US') return 'United States IP';
+            if (geoData.country_code === 'CN') return '中国 IP';
+            
+            return `${geoData.country_name || 'Unknown'} IP`;
+        }
+        
+        // 获取可信度评级
+        function getTrustLevel(geoData) {
+            if (!geoData) return 'Unknown';
+            
+            // 根据不同因素确定可信度
+            if (geoData.country_code === 'US' || geoData.country_code === 'CA' || 
+                geoData.country_code === 'GB' || geoData.country_code === 'AU') {
+                return '高度可信';
+            }
+            
+            if (geoData.country_code === 'CN' || geoData.country_code === 'RU' ||
+                geoData.country_code === 'IR' || geoData.country_code === 'KP') {
+                return '需谨慎验证';
+            }
+            
+            return '一般可信';
+        }
+        
+        // 获取可信度标志
+        function getTrustBadge(geoData) {
+            if (!geoData) return '';
+            
+            if (geoData.country_code === 'US' || geoData.country_code === 'CA' || 
+                geoData.country_code === 'GB' || geoData.country_code === 'AU') {
+                return '<span class="badge badge-info">优质</span>';
+            }
+            
+            if (geoData.country_code === 'CN' || geoData.country_code === 'RU' ||
+                geoData.country_code === 'IR' || geoData.country_code === 'KP') {
+                return '<span class="badge badge-warning">注意</span>';
+            }
+            
+            return '';
+        }
+        
+        // 获取节点等级
+        function getNodeLevel(geoData) {
+            if (!geoData) return 'Unknown';
+            
+            // 检查是否为数据中心或云服务提供商
+            if (geoData.org && (
+                geoData.org.includes('Amazon') || 
+                geoData.org.includes('AWS') || 
+                geoData.org.includes('Microsoft') || 
+                geoData.org.includes('Azure') || 
+                geoData.org.includes('Google') || 
+                geoData.org.includes('Cloudflare') ||
+                geoData.org.includes('Digital Ocean') ||
+                geoData.org.includes('Linode')
+            )) {
+                return '数据中心节点';
+            }
+            
+            // 检查是否为移动网络
+            if (geoData.org && (
+                geoData.org.includes('Mobile') || 
+                geoData.org.includes('Wireless') || 
+                geoData.org.includes('Cellular')
+            )) {
+                return '移动网络节点';
+            }
+            
+            return '普通网络节点';
+        }
+        
+        // 获取节点标志
+        function getNodeBadge(geoData) {
+            if (!geoData) return '';
+            
+            // 为数据中心节点提供特殊标志
+            if (geoData.org && (
+                geoData.org.includes('Amazon') || 
+                geoData.org.includes('AWS') || 
+                geoData.org.includes('Microsoft') || 
+                geoData.org.includes('Azure') || 
+                geoData.org.includes('Google') || 
+                geoData.org.includes('Cloudflare')
+            )) {
+                return '<span class="badge badge-info">高速</span>';
+            }
+            
+            return '';
+        }
         
         // 取消验证
         function cancelValidation() {
@@ -1323,6 +1797,15 @@
                 return;
             }
             
+            // 检查重复项
+            const { uniqueKeys, duplicateCount } = removeDuplicates(keys);
+            keys = uniqueKeys;
+            
+            // 如果有重复项，提示用户
+            if (duplicateCount > 0) {
+                alert(`检测到${duplicateCount}个重复的API密钥，已自动移除。将使用${keys.length}个唯一密钥进行验证。`);
+            }
+            
             // 增加批量验证上限到5000个
             if (keys.length > 5000) {
                 if (!confirm(`您正在尝试验证${keys.length}个密钥，这可能需要较长时间。是否继续？`)) {
@@ -1355,6 +1838,24 @@
             } else {
                 await validateKeysServerSide(keys, updateProgress);
             }
+        }
+        
+        // 移除重复密钥
+        function removeDuplicates(keys) {
+            const uniqueSet = new Set();
+            const uniqueKeys = [];
+            let duplicateCount = 0;
+            
+            keys.forEach(key => {
+                if (!uniqueSet.has(key)) {
+                    uniqueSet.add(key);
+                    uniqueKeys.push(key);
+                } else {
+                    duplicateCount++;
+                }
+            });
+            
+            return { uniqueKeys, duplicateCount };
         }
         
         // 继续验证
@@ -1980,6 +2481,27 @@
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             return `${year}${month}${day}`;
+        }
+        
+        // 获取浏览器名称
+        function getBrowserName(userAgent) {
+            if (userAgent.indexOf("Firefox") > -1) return "Firefox";
+            if (userAgent.indexOf("Opera") > -1 || userAgent.indexOf("OPR") > -1) return "Opera";
+            if (userAgent.indexOf("Trident") > -1) return "Internet Explorer";
+            if (userAgent.indexOf("Edge") > -1) return "Edge";
+            if (userAgent.indexOf("Chrome") > -1) return "Chrome";
+            if (userAgent.indexOf("Safari") > -1) return "Safari";
+            return "Unknown";
+        }
+        
+        // 获取操作系统名称
+        function getOSName(userAgent) {
+            if (userAgent.indexOf("Win") > -1) return "Windows";
+            if (userAgent.indexOf("Mac") > -1) return "MacOS";
+            if (userAgent.indexOf("Linux") > -1) return "Linux";
+            if (userAgent.indexOf("Android") > -1) return "Android";
+            if (userAgent.indexOf("iOS") > -1 || userAgent.indexOf("iPhone") > -1 || userAgent.indexOf("iPad") > -1) return "iOS";
+            return "Unknown";
         }
     </script>
 </body>
