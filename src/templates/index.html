@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyAIcheck - AI接口密钥验证工具</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔑</text></svg>" type="image/svg+xml">
     <style>
         :root {
             --primary-color: #f06292; /* 粉色主色调 */
@@ -53,22 +54,22 @@
         
         body {
             font-family: var(--font-family);
-            line-height: 1.6;
+            line-height: 1.5; /* 减小行高 */
             color: var(--text-color);
             background: var(--bg-gradient);
             min-height: 100vh;
-            padding: 30px 0;
+            padding: 10px 0; /* 进一步减小上下内边距 */
         }
         
         .container {
-            max-width: 1200px; /* 减小宽度 */
+            max-width: 1400px; /* 增加宽度 */
             margin: 0 auto;
             padding: 0 10px; /* 减小左右内边距 */
         }
         
         header {
             text-align: center;
-            margin-bottom: 1.5rem; /* 减小下边距 */
+            margin-bottom: 1rem; /* 减小下边距 */
             animation: fadeIn 1s ease;
         }
         
@@ -90,22 +91,22 @@
             background-color: var(--card-bg);
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
-            padding: 20px; /* 减小内边距 */
-            margin-bottom: 1.5rem; /* 减小下边距 */
+            padding: 15px; /* 减小内边距 */
+            margin-bottom: 1rem; /* 减小下边距 */
             animation: slideUp 0.5s ease;
             border: 1px solid var(--border-color);
         }
         
         .api-type-selector {
             display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 20px;
+            flex-wrap: nowrap; /* 确保在一行显示 */
+            gap: 8px; /* 减小间距 */
+            margin-bottom: 15px;
             justify-content: center;
         }
         
         .api-type-btn {
-            padding: 12px 20px;
+            padding: 10px 15px; /* 减小内边距 */
             border: 2px solid var(--primary-light);
             background-color: white;
             color: var(--primary-dark);
@@ -113,10 +114,11 @@
             cursor: pointer;
             transition: var(--transition);
             font-weight: 500;
-            font-size: 1rem;
+            font-size: 0.95rem; /* 减小字体大小 */
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             position: relative;
             overflow: hidden;
+            white-space: nowrap; /* 防止文本换行 */
         }
         
         .api-type-btn::after {
@@ -143,8 +145,8 @@
         }
         
         .api-settings {
-            margin: 20px 0;
-            padding: 15px;
+            margin: 15px 0; /* 减小上下边距 */
+            padding: 12px; /* 减小内边距 */
             border-radius: 10px;
             background-color: #fff5f8;
             border: 1px dashed var(--primary-light);
@@ -161,20 +163,20 @@
         }
         
         .model-select-container {
-            margin-top: 15px;
+            margin-top: 10px; /* 减小上边距 */
         }
         
         .model-select {
             width: 100%;
-            padding: 12px 15px;
+            padding: 10px; /* 减小内边距 */
             border: 2px solid var(--border-color);
             border-radius: 8px;
             font-family: inherit;
-            font-size: 1rem;
+            font-size: 0.95rem; /* 减小字体大小 */
             color: var(--text-color);
             transition: var(--transition);
             background-color: white;
-            margin-top: 8px;
+            margin-top: 5px; /* 减小上边距 */
         }
         
         .model-select:focus {
@@ -184,12 +186,12 @@
         }
         
         .input-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem; /* 减小下边距 */
         }
         
         .custom-input {
             width: 100%;
-            padding: 12px 15px;
+            padding: 10px; /* 减小内边距 */
             border: 2px solid var(--border-color);
             border-radius: 8px;
             font-family: inherit;
@@ -219,7 +221,7 @@
         .toggle-container {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px; /* 减小下边距 */
             background-color: #fff5f8;
             padding: 10px 15px;
             border-radius: 8px;
@@ -323,12 +325,12 @@
         
         textarea {
             width: 100%;
-            min-height: 150px;
-            padding: 15px;
+            min-height: 100px; /* 减小文本框高度 */
+            padding: 10px; /* 减小内边距 */
             border: 2px solid var(--border-color);
             border-radius: 8px;
             font-family: inherit;
-            font-size: 1rem;
+            font-size: 0.95rem; /* 减小字体大小 */
             resize: vertical;
             transition: var(--transition);
         }
@@ -376,18 +378,18 @@
         
         .actions-container {
             display: flex;
-            gap: 10px;
-            margin-top: 1.5rem;
+            gap: 8px; /* 减小按钮间隔 */
+            margin-top: 1rem; /* 减小上边距 */
             flex-wrap: wrap;
         }
         
         .btn {
             display: inline-block;
-            padding: 12px 24px;
+            padding: 10px 20px; /* 减小内边距 */
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.95rem; /* 减小字体大小 */
             font-weight: 500;
             text-align: center;
             transition: var(--transition);
@@ -452,7 +454,7 @@
         }
         
         .progress {
-            margin-top: 2rem;
+            margin-top: 1rem; /* 减小上边距 */
             display: none;
             animation: fadeIn 0.5s ease;
         }
@@ -675,16 +677,16 @@
         @media (min-width: 1200px) {
             .two-column-layout {
                 display: flex;
-                gap: 30px;
+                gap: 20px; /* 减小两列间隔 */
                 align-items: flex-start;
             }
             
             .input-column {
-                flex: 1;
+                flex: 0.6; /* 缩小输入区域的比例 */
             }
             
             .results-column {
-                flex: 1;
+                flex: 0.4; /* 增大结果区域的比例 */
                 margin-top: 0;
             }
             
@@ -1492,8 +1494,31 @@
                 cancelValidation();
             });
             
-            // 暗色模式切换
-            document.getElementById('theme-toggle').addEventListener('click', toggleDarkMode);
+            // 暗色模式切换 - 完全重写以修复问题
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    // 直接基于body类名切换模式，避免依赖isDarkMode变量
+                    if (document.body.classList.contains('dark-mode')) {
+                        // 当前是暗色模式，切换到亮色模式
+                        document.body.classList.remove('dark-mode');
+                        this.querySelector('.theme-toggle-icon').textContent = '🌙';
+                        localStorage.setItem('theme', 'light');
+                        isDarkMode = false;
+                        console.log("已切换到亮色模式");
+                    } else {
+                        // 当前是亮色模式，切换到暗色模式
+                        document.body.classList.add('dark-mode');
+                        this.querySelector('.theme-toggle-icon').textContent = '☀️';
+                        localStorage.setItem('theme', 'dark');
+                        isDarkMode = true;
+                        console.log("已切换到暗色模式");
+                    }
+                });
+            }
             
             // 刷新节点信息
             document.getElementById('refresh-node-info').addEventListener('click', fetchNodeInfo);
@@ -1515,10 +1540,8 @@
         }
         
         // 切换暗色模式
-        function toggleDarkMode(event) {
-            // 阻止事件冒泡，避免点击事件传播导致节点信息面板隐藏
-            event.stopPropagation();
-            
+        function toggleDarkMode() {
+            console.log("切换暗色模式，当前状态:", isDarkMode);
             if (isDarkMode) {
                 disableDarkMode();
             } else {
@@ -1530,7 +1553,6 @@
         function enableDarkMode() {
             document.body.classList.add('dark-mode');
             document.getElementById('theme-toggle').querySelector('.theme-toggle-icon').textContent = '☀️';
-            document.getElementById('theme-toggle').querySelector('.theme-toggle-text').textContent = '亮色模式';
             isDarkMode = true;
             localStorage.setItem('theme', 'dark');
         }
@@ -1539,7 +1561,6 @@
         function disableDarkMode() {
             document.body.classList.remove('dark-mode');
             document.getElementById('theme-toggle').querySelector('.theme-toggle-icon').textContent = '🌙';
-            document.getElementById('theme-toggle').querySelector('.theme-toggle-text').textContent = '暗色模式';
             isDarkMode = false;
             localStorage.setItem('theme', 'light');
         }
