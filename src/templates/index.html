@@ -1958,7 +1958,7 @@
             });
             
             // 验证按钮
-            document.getElementById('validate-btn').addEventListener('click', detectAndStartValidation);
+            document.getElementById('validate-btn').addEventListener('click', startValidation);
             
             // 清除按钮
             document.getElementById('clear-btn').addEventListener('click', function() {
@@ -2664,8 +2664,10 @@
                     isValidating = false;
                     return;
                 }
-            } else if (currentApiType === 'gemini') {
-                // 为Gemini设置带有选定模型的completions URL
+            }
+            
+            // 为Gemini设置带有选定模型的completions URL
+            if (currentApiType === 'gemini') {
                 const selectedModel = getSelectedModel();
                 API_ENDPOINTS.gemini.completions = API_ENDPOINTS.gemini.completions.replace('MODEL_NAME', selectedModel);
             }
@@ -3140,9 +3142,8 @@
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: headers,
-                    signal: signal, // 允许取消请求
-                    // 增加超时时间
-                    signal: AbortSignal.timeout(20000) // 20秒超时
+                    // 使用传入的signal，并设置20秒超时
+                    signal: signal ? signal : AbortSignal.timeout(20000) // 20秒超时
                 });
                 
                 // 根据状态码确定有效性
@@ -3234,9 +3235,8 @@
                     method: 'POST',
                     headers: headers,
                     body: JSON.stringify(payload),
-                    signal: signal, // 允许取消请求
-                    // 增加超时时间
-                    signal: AbortSignal.timeout(30000) // 30秒超时
+                    // 使用传入的signal，并设置30秒超时
+                    signal: signal ? signal : AbortSignal.timeout(30000) // 30秒超时
                 });
                 
                 // 根据状态码确定有效性
