@@ -42,7 +42,7 @@
         }
         
         .container {
-            max-width: 1100px;
+            max-width: 1400px; /* 增加宽度以适应宽屏 */
             margin: 0 auto;
             padding: 0 20px;
         }
@@ -80,7 +80,7 @@
         .api-type-selector {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 20px;
             justify-content: center;
         }
@@ -132,13 +132,36 @@
             animation: fadeIn 0.5s ease;
         }
         
-        .openai-like-settings {
+        .custom-settings {
             display: none;
             background-color: #f3e5f5;
             border-color: #ce93d8;
             padding: 15px;
             border-radius: 10px;
             margin-top: 15px;
+        }
+        
+        .model-select-container {
+            margin-top: 15px;
+        }
+        
+        .model-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            color: var(--text-color);
+            transition: var(--transition);
+            background-color: white;
+            margin-top: 8px;
+        }
+        
+        .model-select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(240, 98, 146, 0.2);
         }
         
         .input-group {
@@ -398,6 +421,17 @@
             box-shadow: 0 5px 15px rgba(102, 187, 106, 0.3);
         }
         
+        .btn-pause {
+            background-color: var(--warning-color);
+            color: #5d4037;
+        }
+        
+        .btn-pause:hover {
+            background-color: #ffb300;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+        }
+        
         .progress {
             margin-top: 2rem;
             display: none;
@@ -426,6 +460,22 @@
             transition: width 0.3s ease;
             width: 0%;
             border-radius: 6px;
+        }
+        
+        .progress-stats {
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        
+        .progress-control {
+            margin-top: 12px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
         }
         
         .results-container {
@@ -513,6 +563,7 @@
             border: 1px solid #f8bbd0;
             border-radius: 8px;
             overflow: hidden;
+            table-layout: fixed; /* 为宽屏优化表格布局 */
         }
         
         .results-table th, .results-table td {
@@ -533,6 +584,23 @@
         
         .results-table tr:hover {
             background-color: #fce4ec;
+        }
+        
+        .results-table th:nth-child(1),
+        .results-table td:nth-child(1) {
+            width: 30%; /* 密钥列宽度 */
+            word-break: break-all;
+        }
+        
+        .results-table th:nth-child(2),
+        .results-table td:nth-child(2) {
+            width: 15%; /* 状态列宽度 */
+        }
+        
+        .results-table th:nth-child(3),
+        .results-table td:nth-child(3) {
+            width: 55%; /* 错误信息列宽度 */
+            word-break: break-word;
         }
         
         .valid-key {
@@ -569,6 +637,28 @@
         .network-error::before {
             content: '!';
             margin-right: 5px;
+        }
+        
+        /* 宽屏适配的两列布局 */
+        @media (min-width: 1200px) {
+            .two-column-layout {
+                display: flex;
+                gap: 30px;
+                align-items: flex-start;
+            }
+            
+            .input-column {
+                flex: 1;
+            }
+            
+            .results-column {
+                flex: 1;
+                margin-top: 0;
+            }
+            
+            .results-container {
+                margin-top: 0;
+            }
         }
         
         @keyframes fadeIn {
@@ -623,125 +713,197 @@
     <div class="container">
         <header>
             <h1>多平台 API 密钥验证工具</h1>
-            <p class="description">批量验证 OpenAI、Claude、Gemini 和其他类 OpenAI 平台的 API 密钥</p>
+            <p class="description">批量验证 OpenAI、Claude、Gemini、Deepseek、XAI 和其他类 OpenAI 平台的 API 密钥</p>
         </header>
         
-        <div class="card">
-            <div class="api-type-selector">
-                <button class="api-type-btn active" data-api-type="openai">OpenAI</button>
-                <button class="api-type-btn" data-api-type="claude">Claude</button>
-                <button class="api-type-btn" data-api-type="gemini">Gemini</button>
-                <button class="api-type-btn" data-api-type="openai_like">OpenAI-like (自定义)</button>
-            </div>
-            
-            <div class="toggle-container">
-                <span class="toggle-label">使用浏览器端验证:</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="client-side-toggle" checked>
-                    <span class="toggle-slider"></span>
-                </label>
-                <span class="help-text">推荐启用，解决网络连接问题</span>
-            </div>
-            
-            <div class="api-settings" id="openai-settings">
-                <p><strong>验证 OpenAI API 密钥</strong> - 格式: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
-            </div>
-            
-            <div class="api-settings" id="claude-settings" style="display: none;">
-                <p><strong>验证 Claude API 密钥</strong> - 将测试 claude-3.5-sonnet 模型</p>
-            </div>
-            
-            <div class="api-settings" id="gemini-settings" style="display: none;">
-                <p><strong>验证 Gemini API 密钥</strong> - 将测试 gemini-2.5-flash-preview-04-17 模型</p>
-            </div>
-            
-            <div class="api-settings" id="openai_like-settings" style="display: none;">
-                <p><strong>验证类 OpenAI API 密钥</strong> - 如硅基流动、火山引擎等兼容 OpenAI 的平台</p>
-                <div class="openai-like-settings" style="display: block;">
-                    <div class="input-group">
-                        <label for="custom-api-url">API 基础 URL (必须以 /v1 结尾):</label>
-                        <input type="text" id="custom-api-url" class="custom-input" placeholder="例如: https://api.example.com/v1" />
+        <div class="two-column-layout">
+            <div class="input-column">
+                <div class="card">
+                    <div class="api-type-selector">
+                        <button class="api-type-btn active" data-api-type="openai">OpenAI</button>
+                        <button class="api-type-btn" data-api-type="claude">Claude</button>
+                        <button class="api-type-btn" data-api-type="gemini">Gemini</button>
+                        <button class="api-type-btn" data-api-type="deepseek">Deepseek</button>
+                        <button class="api-type-btn" data-api-type="xai">XAI (Grok)</button>
+                        <button class="api-type-btn" data-api-type="openai_like">自定义</button>
                     </div>
-                    <div class="input-group">
-                        <label for="custom-model-name">模型名称:</label>
-                        <input type="text" id="custom-model-name" class="custom-input" placeholder="例如: llama-7b" />
+                    
+                    <div class="toggle-container">
+                        <span class="toggle-label">使用浏览器端验证:</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="client-side-toggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="help-text">推荐启用，解决网络连接问题</span>
+                    </div>
+                    
+                    <div class="api-settings" id="openai-settings">
+                        <p><strong>验证 OpenAI API 密钥</strong> - 格式: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
+                        <div class="model-select-container">
+                            <label for="openai-model">选择模型:</label>
+                            <select id="openai-model" class="model-select">
+                                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                                <option value="gpt-4">GPT-4</option>
+                                <option value="gpt-4o">GPT-4o</option>
+                                <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="api-settings" id="claude-settings" style="display: none;">
+                        <p><strong>验证 Claude API 密钥</strong></p>
+                        <div class="model-select-container">
+                            <label for="claude-model">选择模型:</label>
+                            <select id="claude-model" class="model-select">
+                                <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+                                <option value="claude-3-opus">Claude 3 Opus</option>
+                                <option value="claude-3-sonnet">Claude 3 Sonnet</option>
+                                <option value="claude-3-haiku">Claude 3 Haiku</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="api-settings" id="gemini-settings" style="display: none;">
+                        <p><strong>验证 Gemini API 密钥</strong></p>
+                        <div class="model-select-container">
+                            <label for="gemini-model">选择模型:</label>
+                            <select id="gemini-model" class="model-select">
+                                <option value="gemini-2.5-flash-preview-04-17">Gemini 2.5 Flash</option>
+                                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                                <option value="gemini-1.0-pro">Gemini 1.0 Pro</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="api-settings" id="deepseek-settings" style="display: none;">
+                        <p><strong>验证 Deepseek API 密钥</strong></p>
+                        <div class="model-select-container">
+                            <label for="deepseek-model">选择模型:</label>
+                            <select id="deepseek-model" class="model-select">
+                                <option value="deepseek-chat">DeepSeek Chat</option>
+                                <option value="deepseek-coder">DeepSeek Coder</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="api-settings" id="xai-settings" style="display: none;">
+                        <p><strong>验证 XAI (Grok) API 密钥</strong></p>
+                        <div class="model-select-container">
+                            <label for="xai-model">选择模型:</label>
+                            <select id="xai-model" class="model-select">
+                                <option value="grok-1">Grok-1</option>
+                                <option value="grok-1.5">Grok-1.5</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="api-settings" id="openai_like-settings" style="display: none;">
+                        <p><strong>验证类 OpenAI API 密钥</strong> - 如硅基流动、火山引擎等兼容 OpenAI 的平台</p>
+                        <div class="custom-settings" style="display: block;">
+                            <div class="input-group">
+                                <label for="custom-api-url">API 基础 URL (必须以 /v1 结尾):</label>
+                                <input type="text" id="custom-api-url" class="custom-input" placeholder="例如: https://api.example.com/v1" />
+                            </div>
+                            <div class="input-group">
+                                <label for="custom-model-name">模型名称:</label>
+                                <input type="text" id="custom-model-name" class="custom-input" placeholder="例如: llama-7b" />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tabs">
+                        <div class="tab active" data-tab="text-input">文本输入</div>
+                        <div class="tab" data-tab="file-input">文件输入</div>
+                    </div>
+                    
+                    <div class="input-group" id="text-input-container">
+                        <label for="keys-input">API 密钥 (每行一个):</label>
+                        <textarea id="keys-input" placeholder="在此输入您的API密钥，每行一个..."></textarea>
+                    </div>
+                    
+                    <div class="input-group" id="file-input-container" style="display: none;">
+                        <label for="file-input">上传 CSV 或文本文件:</label>
+                        <div class="file-input-container">
+                            <label for="file-input" class="file-input-label">
+                                选择文件
+                            </label>
+                            <input type="file" id="file-input" class="file-input" accept=".csv,.txt">
+                            <div class="file-name" id="file-name">未选择文件</div>
+                        </div>
+                        <p class="help-text">文件第一列应包含API密钥</p>
+                    </div>
+                    
+                    <div class="actions-container">
+                        <button id="validate-btn" class="btn btn-primary">验证密钥</button>
+                        <button id="export-valid-btn" class="btn btn-success" disabled>导出有效密钥</button>
+                        <button id="export-all-btn" class="btn btn-secondary" disabled>导出所有结果</button>
+                        <button id="clear-btn" class="btn btn-secondary">清除</button>
+                    </div>
+                    
+                    <div class="progress" id="progress-container">
+                        <div class="progress-info">
+                            <span id="progress-text">验证中...</span>
+                            <span id="progress-percentage">0%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="progress-bar"></div>
+                        </div>
+                        <div class="progress-stats">
+                            <span id="validated-count">已验证: 0/0</span>
+                            <span id="valid-progress">有效: 0</span>
+                            <span id="invalid-progress">无效: 0</span>
+                            <span id="error-progress">错误: 0</span>
+                            <span id="time-remaining">预计剩余时间: 计算中...</span>
+                        </div>
+                        <div class="progress-control">
+                            <button id="pause-btn" class="btn btn-pause">暂停</button>
+                            <button id="cancel-btn" class="btn btn-secondary">取消</button>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <div class="tabs">
-                <div class="tab active" data-tab="text-input">文本输入</div>
-                <div class="tab" data-tab="file-input">文件输入</div>
-            </div>
-            
-            <div class="input-group" id="text-input-container">
-                <label for="keys-input">API 密钥 (每行一个):</label>
-                <textarea id="keys-input" placeholder="在此输入您的API密钥，每行一个..."></textarea>
-            </div>
-            
-            <div class="input-group" id="file-input-container" style="display: none;">
-                <label for="file-input">上传 CSV 或文本文件:</label>
-                <div class="file-input-container">
-                    <label for="file-input" class="file-input-label">
-                        选择文件
-                    </label>
-                    <input type="file" id="file-input" class="file-input" accept=".csv,.txt">
-                    <div class="file-name" id="file-name">未选择文件</div>
+            <div class="results-column">
+                <div class="results-container" id="results-container">
+                    <div class="results-heading">
+                        <h2>验证结果</h2>
+                        <div class="export-buttons">
+                            <button id="export-valid-results-btn" class="btn btn-success">导出有效密钥</button>
+                            <button id="export-all-results-btn" class="btn btn-secondary">导出所有结果</button>
+                        </div>
+                    </div>
+                    
+                    <div class="results-summary">
+                        <div class="summary-item summary-total">
+                            <h3>总计</h3>
+                            <p id="total-count">0</p>
+                        </div>
+                        <div class="summary-item summary-valid">
+                            <h3>有效</h3>
+                            <p id="valid-count">0</p>
+                        </div>
+                        <div class="summary-item summary-invalid">
+                            <h3>无效</h3>
+                            <p id="invalid-count">0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="results-table-container">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>密钥</th>
+                                    <th>状态</th>
+                                    <th>错误信息</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-body">
+                                <!-- 结果会被动态添加到这里 -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <p class="help-text">文件第一列应包含API密钥</p>
-            </div>
-            
-            <div class="actions-container">
-                <button id="validate-btn" class="btn btn-primary">验证密钥</button>
-                <button id="export-valid-btn" class="btn btn-success" disabled>导出有效密钥</button>
-                <button id="export-all-btn" class="btn btn-secondary" disabled>导出所有结果</button>
-                <button id="clear-btn" class="btn btn-secondary">清除</button>
-            </div>
-            
-            <div class="progress" id="progress-container">
-                <div class="progress-info">
-                    <span id="progress-text">验证中...</span>
-                    <span id="progress-percentage">0%</span>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar" id="progress-bar"></div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="results-container" id="results-container">
-            <div class="results-heading">
-                <h2>验证结果</h2>
-            </div>
-            
-            <div class="results-summary">
-                <div class="summary-item summary-total">
-                    <h3>总计</h3>
-                    <p id="total-count">0</p>
-                </div>
-                <div class="summary-item summary-valid">
-                    <h3>有效</h3>
-                    <p id="valid-count">0</p>
-                </div>
-                <div class="summary-item summary-invalid">
-                    <h3>无效</h3>
-                    <p id="invalid-count">0</p>
-                </div>
-            </div>
-            
-            <div class="results-table-container">
-                <table class="results-table">
-                    <thead>
-                        <tr>
-                            <th>密钥</th>
-                            <th>状态</th>
-                            <th>错误信息</th>
-                        </tr>
-                    </thead>
-                    <tbody id="results-body">
-                        <!-- 结果会被动态添加到这里 -->
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
@@ -751,42 +913,83 @@
         let currentApiType = 'openai';
         let validationResults = [];
         let isClientSideValidation = true;
+        let isValidating = false;
+        let isPaused = false;
+        let validationQueue = [];
+        let currentBatchIndex = 0;
+        let validationStats = {
+            valid: 0,
+            invalid: 0,
+            error: 0
+        };
+        let startTime = null;
+        let validationController = null; // AbortController用于取消验证
         
         // API验证端点配置
         const API_ENDPOINTS = {
             openai: {
                 models: 'https://api.openai.com/v1/models',
                 completions: 'https://api.openai.com/v1/chat/completions',
-                payload: {
-                    model: 'gpt-3.5-turbo',
-                    messages: [{ role: 'user', content: 'Hello' }],
-                    max_tokens: 1
+                payload: function(model) {
+                    return {
+                        model: model || 'gpt-3.5-turbo',
+                        messages: [{ role: 'user', content: 'Hello' }],
+                        max_tokens: 1
+                    };
                 }
             },
             claude: {
                 models: 'https://api.anthropic.com/v1/models',
                 completions: 'https://api.anthropic.com/v1/messages',
-                payload: {
-                    model: 'claude-3.5-sonnet',
-                    max_tokens: 1,
-                    messages: [{ role: 'user', content: 'Hello' }]
+                payload: function(model) {
+                    return {
+                        model: model || 'claude-3-5-sonnet',
+                        max_tokens: 1,
+                        messages: [{ role: 'user', content: 'Hello' }]
+                    };
                 }
             },
             gemini: {
                 models: 'https://generativelanguage.googleapis.com/v1beta/models',
-                completions: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent',
-                payload: {
-                    contents: [{ parts: [{ text: 'Hello' }] }]
+                completions: 'https://generativelanguage.googleapis.com/v1beta/models/MODEL_NAME:generateContent',
+                payload: function() {
+                    return {
+                        contents: [{ parts: [{ text: 'Hello' }] }]
+                    };
+                }
+            },
+            deepseek: {
+                models: 'https://api.deepseek.com/v1/models',
+                completions: 'https://api.deepseek.com/v1/chat/completions',
+                payload: function(model) {
+                    return {
+                        model: model || 'deepseek-chat',
+                        messages: [{ role: 'user', content: 'Hello' }],
+                        max_tokens: 1
+                    };
+                }
+            },
+            xai: {
+                models: 'https://api.xai.com/v1/models',
+                completions: 'https://api.xai.com/v1/chat/completions',
+                payload: function(model) {
+                    return {
+                        model: model || 'grok-1',
+                        messages: [{ role: 'user', content: 'Hello' }],
+                        max_tokens: 1
+                    };
                 }
             },
             // openai_like 配置将在运行时动态设置
             openai_like: {
                 models: '', // 由用户提供
                 completions: '', // 将基于models URL构建
-                payload: {
-                    model: '', // 由用户提供
-                    messages: [{ role: 'user', content: 'Hello' }],
-                    max_tokens: 1
+                payload: function(model) {
+                    return {
+                        model: model || '', // 由用户提供
+                        messages: [{ role: 'user', content: 'Hello' }],
+                        max_tokens: 1
+                    };
                 }
             }
         };
@@ -841,6 +1044,8 @@
                 // 禁用导出按钮
                 document.getElementById('export-valid-btn').disabled = true;
                 document.getElementById('export-all-btn').disabled = true;
+                document.getElementById('export-valid-results-btn').disabled = true;
+                document.getElementById('export-all-results-btn').disabled = true;
             });
             
             // 导出有效密钥按钮
@@ -853,11 +1058,72 @@
                 exportResults('all');
             });
             
+            // 结果区域导出按钮
+            document.getElementById('export-valid-results-btn').addEventListener('click', function() {
+                exportResults('valid');
+            });
+            
+            document.getElementById('export-all-results-btn').addEventListener('click', function() {
+                exportResults('all');
+            });
+            
             // 客户端验证切换
             document.getElementById('client-side-toggle').addEventListener('change', function() {
                 isClientSideValidation = this.checked;
             });
+            
+            // 暂停按钮
+            document.getElementById('pause-btn').addEventListener('click', function() {
+                if (isPaused) {
+                    // 继续验证
+                    isPaused = false;
+                    this.textContent = '暂停';
+                    this.classList.remove('btn-primary');
+                    this.classList.add('btn-pause');
+                    continueValidation();
+                } else {
+                    // 暂停验证
+                    isPaused = true;
+                    this.textContent = '继续';
+                    this.classList.remove('btn-pause');
+                    this.classList.add('btn-primary');
+                }
+            });
+            
+            // 取消按钮
+            document.getElementById('cancel-btn').addEventListener('click', function() {
+                cancelValidation();
+            });
         });
+        
+        // 取消验证
+        function cancelValidation() {
+            if (!isValidating) return;
+            
+            // 中止当前所有请求
+            if (validationController) {
+                validationController.abort();
+            }
+            
+            isValidating = false;
+            isPaused = false;
+            
+            // 重置UI
+            document.getElementById('pause-btn').textContent = '暂停';
+            document.getElementById('pause-btn').classList.remove('btn-primary');
+            document.getElementById('pause-btn').classList.add('btn-pause');
+            document.getElementById('progress-container').style.display = 'none';
+            document.getElementById('validate-btn').disabled = false;
+            
+            // 如果已有部分结果，则显示
+            if (validationResults.length > 0) {
+                displayResults();
+                document.getElementById('export-valid-btn').disabled = false;
+                document.getElementById('export-all-btn').disabled = false;
+                document.getElementById('export-valid-results-btn').disabled = false;
+                document.getElementById('export-all-results-btn').disabled = false;
+            }
+        }
         
         // 解析输入获取API密钥
         function getApiKeys() {
@@ -880,6 +1146,26 @@
             }
         }
         
+        // 获取当前选择的模型
+        function getSelectedModel() {
+            switch (currentApiType) {
+                case 'openai':
+                    return document.getElementById('openai-model').value;
+                case 'claude':
+                    return document.getElementById('claude-model').value;
+                case 'gemini':
+                    return document.getElementById('gemini-model').value;
+                case 'deepseek':
+                    return document.getElementById('deepseek-model').value;
+                case 'xai':
+                    return document.getElementById('xai-model').value;
+                case 'openai_like':
+                    return document.getElementById('custom-model-name').value.trim();
+                default:
+                    return null;
+            }
+        }
+        
         // 获取自定义API配置
         function getCustomApiConfig() {
             if (currentApiType !== 'openai_like') return null;
@@ -899,7 +1185,6 @@
             // 更新openai_like配置
             API_ENDPOINTS.openai_like.models = customApiUrl + '/models';
             API_ENDPOINTS.openai_like.completions = customApiUrl + '/chat/completions';
-            API_ENDPOINTS.openai_like.payload.model = customModelName;
             
             return {
                 custom_api_url: customApiUrl,
@@ -945,23 +1230,54 @@
         
         // 开始验证过程
         async function startValidation() {
-            // 重置UI
+            // 如果当前正在验证，则不执行
+            if (isValidating && !isPaused) return;
+            
+            // 如果暂停状态，继续验证
+            if (isValidating && isPaused) {
+                continueValidation();
+                return;
+            }
+            
+            // 重置UI和状态
             document.getElementById('results-container').style.display = 'none';
             document.getElementById('results-body').innerHTML = '';
             validationResults = [];
             document.getElementById('export-valid-btn').disabled = true;
             document.getElementById('export-all-btn').disabled = true;
+            document.getElementById('export-valid-results-btn').disabled = true;
+            document.getElementById('export-all-results-btn').disabled = true;
+            
+            validationStats = {
+                valid: 0,
+                invalid: 0,
+                error: 0
+            };
+            
+            isValidating = true;
+            isPaused = false;
+            currentBatchIndex = 0;
+            startTime = Date.now();
+            
+            // 禁用验证按钮
+            document.getElementById('validate-btn').disabled = true;
             
             // 获取API密钥
             let keys = getApiKeys();
             
-            // 如果是OpenAI-like，检查自定义配置
+            // 根据API类型设置配置
             if (currentApiType === 'openai_like') {
                 const customConfig = getCustomApiConfig();
                 if (!customConfig) {
                     alert('请提供有效的自定义API URL和模型名称');
+                    document.getElementById('validate-btn').disabled = false;
+                    isValidating = false;
                     return;
                 }
+            } else if (currentApiType === 'gemini') {
+                // 为Gemini设置带有选定模型的completions URL
+                const selectedModel = getSelectedModel();
+                API_ENDPOINTS.gemini.completions = API_ENDPOINTS.gemini.completions.replace('MODEL_NAME', selectedModel);
             }
             
             // 如果是文件输入，处理文件
@@ -970,6 +1286,8 @@
                 const fileInput = document.getElementById('file-input');
                 if (!fileInput.files || fileInput.files.length === 0) {
                     alert('请选择一个文件');
+                    document.getElementById('validate-btn').disabled = false;
+                    isValidating = false;
                     return;
                 }
                 
@@ -977,6 +1295,8 @@
                     keys = await parseFile(fileInput.files[0]);
                 } catch (error) {
                     alert(`文件解析错误: ${error.message}`);
+                    document.getElementById('validate-btn').disabled = false;
+                    isValidating = false;
                     return;
                 }
             }
@@ -984,14 +1304,22 @@
             // 验证是否有密钥
             if (keys.length === 0) {
                 alert('未找到API密钥');
+                document.getElementById('validate-btn').disabled = false;
+                isValidating = false;
                 return;
             }
             
-            // 限制批量验证数量
-            if (keys.length > 500) {
-                alert('一次最多验证500个密钥');
-                return;
+            // 增加批量验证上限到5000个
+            if (keys.length > 5000) {
+                if (!confirm(`您正在尝试验证${keys.length}个密钥，这可能需要较长时间。是否继续？`)) {
+                    document.getElementById('validate-btn').disabled = false;
+                    isValidating = false;
+                    return;
+                }
             }
+            
+            // 准备验证队列
+            validationQueue = [...keys];
             
             // 显示进度条
             const progressContainer = document.getElementById('progress-container');
@@ -1004,12 +1332,104 @@
             progressText.textContent = '准备验证...';
             progressPercentage.textContent = '0%';
             
+            // 更新统计信息
+            updateValidationStats(0, keys.length);
+            
             // 选择验证方式
             if (isClientSideValidation) {
-                await validateKeysClientSide(keys, updateProgress);
+                processValidationBatch();
             } else {
                 await validateKeysServerSide(keys, updateProgress);
             }
+        }
+        
+        // 继续验证
+        function continueValidation() {
+            if (!isValidating || !isPaused) return;
+            
+            isPaused = false;
+            processValidationBatch();
+        }
+        
+        // 处理验证批次
+        async function processValidationBatch() {
+            if (!isValidating || isPaused) return;
+            
+            // 创建新的AbortController用于本批次请求
+            validationController = new AbortController();
+            
+            const batchSize = 10; // 批量大小
+            const totalKeys = validationQueue.length + validationResults.length;
+            const processedCount = validationResults.length;
+            
+            // 如果所有批次已处理完毕
+            if (currentBatchIndex >= validationQueue.length) {
+                finishValidation();
+                return;
+            }
+            
+            // 获取当前批次
+            const endIndex = Math.min(currentBatchIndex + batchSize, validationQueue.length);
+            const currentBatch = validationQueue.slice(currentBatchIndex, endIndex);
+            
+            try {
+                // 选择的模型
+                const selectedModel = getSelectedModel();
+                
+                // 并行验证当前批次
+                const batchPromises = currentBatch.map(key => 
+                    validateSingleKeyClientSide(key, currentApiType, selectedModel, validationController.signal)
+                );
+                
+                // 等待当前批次完成
+                const batchResults = await Promise.all(batchPromises);
+                
+                // 更新结果
+                validationResults.push(...batchResults);
+                
+                // 更新统计信息
+                batchResults.forEach(result => {
+                    if (result.valid) validationStats.valid++;
+                    else if (result.error_code === 'NETWORK_ERROR') validationStats.error++;
+                    else validationStats.invalid++;
+                });
+                
+                // 更新进度
+                const newProcessedCount = processedCount + currentBatch.length;
+                const progress = (newProcessedCount / totalKeys) * 100;
+                updateProgress(progress, `已验证 ${newProcessedCount}/${totalKeys}`);
+                updateValidationStats(newProcessedCount, totalKeys);
+                
+                // 更新当前批次索引
+                currentBatchIndex = endIndex;
+                
+                // 如果暂停，则不继续处理
+                if (isPaused) return;
+                
+                // 批次间延迟，避免API限制
+                if (currentBatchIndex < validationQueue.length) {
+                    setTimeout(processValidationBatch, 500);
+                } else {
+                    finishValidation();
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    console.log('验证被取消');
+                } else {
+                    console.error('批次处理错误:', error);
+                    
+                    // 如果出错但未被取消，尝试继续处理
+                    if (isValidating && !isPaused) {
+                        setTimeout(processValidationBatch, 2000); // 延迟更长时间后重试
+                    }
+                }
+            }
+        }
+        
+        // 完成验证
+        function finishValidation() {
+            isValidating = false;
+            document.getElementById('validate-btn').disabled = false;
             
             // 显示结果
             displayResults();
@@ -1017,39 +1437,98 @@
             // 启用导出按钮
             document.getElementById('export-valid-btn').disabled = false;
             document.getElementById('export-all-btn').disabled = false;
+            document.getElementById('export-valid-results-btn').disabled = false;
+            document.getElementById('export-all-results-btn').disabled = false;
+        }
+        
+        // 更新验证统计信息
+        function updateValidationStats(processedCount, totalCount) {
+            document.getElementById('validated-count').textContent = `已验证: ${processedCount}/${totalCount}`;
+            document.getElementById('valid-progress').textContent = `有效: ${validationStats.valid}`;
+            document.getElementById('invalid-progress').textContent = `无效: ${validationStats.invalid}`;
+            document.getElementById('error-progress').textContent = `错误: ${validationStats.error}`;
+            
+            // 计算预计剩余时间
+            if (processedCount > 0 && startTime) {
+                const elapsedMs = Date.now() - startTime;
+                const msPerKey = elapsedMs / processedCount;
+                const remainingKeys = totalCount - processedCount;
+                const remainingMs = remainingKeys * msPerKey;
+                
+                let timeRemainingText = '预计剩余时间: ';
+                
+                if (remainingMs < 60000) {
+                    // 少于1分钟
+                    timeRemainingText += `${Math.round(remainingMs / 1000)}秒`;
+                } else if (remainingMs < 3600000) {
+                    // 少于1小时
+                    const minutes = Math.floor(remainingMs / 60000);
+                    const seconds = Math.round((remainingMs % 60000) / 1000);
+                    timeRemainingText += `${minutes}分${seconds}秒`;
+                } else {
+                    // 超过1小时
+                    const hours = Math.floor(remainingMs / 3600000);
+                    const minutes = Math.floor((remainingMs % 3600000) / 60000);
+                    timeRemainingText += `${hours}小时${minutes}分钟`;
+                }
+                
+                document.getElementById('time-remaining').textContent = timeRemainingText;
+            } else {
+                document.getElementById('time-remaining').textContent = '预计剩余时间: 计算中...';
+            }
         }
         
         // 客户端验证密钥（浏览器端验证）
         async function validateKeysClientSide(keys, progressCallback) {
-            const batchSize = 5; // 并发批量大小
-            const totalKeys = keys.length;
-            let completedCount = 0;
-            
             validationResults = [];
+            const totalKeys = keys.length;
             
             // 批量处理
-            for (let i = 0; i < keys.length; i += batchSize) {
-                const batch = keys.slice(i, i + batchSize);
-                const batchPromises = batch.map(key => validateSingleKeyClientSide(key, currentApiType));
+            for (let i = 0; i < keys.length; i += 10) {
+                if (isPaused) {
+                    // 如果暂停，等待继续
+                    await new Promise(resolve => {
+                        const checkPaused = () => {
+                            if (!isPaused) resolve();
+                            else setTimeout(checkPaused, 500);
+                        };
+                        checkPaused();
+                    });
+                }
+                
+                if (!isValidating) break; // 如果取消了验证
+                
+                const batch = keys.slice(i, i + 10);
+                const model = getSelectedModel();
+                const batchPromises = batch.map(key => validateSingleKeyClientSide(key, currentApiType, model, validationController.signal));
                 
                 // 等待当前批次完成
                 const batchResults = await Promise.all(batchPromises);
                 validationResults.push(...batchResults);
                 
                 // 更新进度
-                completedCount += batch.length;
+                const completedCount = Math.min(i + 10, keys.length);
                 const progress = (completedCount / totalKeys) * 100;
                 progressCallback(progress, `已验证 ${completedCount}/${totalKeys}`);
                 
+                // 更新统计信息
+                batchResults.forEach(result => {
+                    if (result.valid) validationStats.valid++;
+                    else if (result.error_code === 'NETWORK_ERROR') validationStats.error++;
+                    else validationStats.invalid++;
+                });
+                
+                updateValidationStats(completedCount, totalKeys);
+                
                 // 添加短暂延迟避免API限制
-                if (i + batchSize < keys.length) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                if (i + 10 < keys.length) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
         }
         
         // 验证单个密钥（客户端）
-        async function validateSingleKeyClientSide(key, apiType) {
+        async function validateSingleKeyClientSide(key, apiType, modelName, signal) {
             const result = {
                 key: key,
                 valid: false,
@@ -1090,6 +1569,18 @@
                         'Content-Type': 'application/json'
                     };
                     break;
+                case 'deepseek':
+                    headers = {
+                        'Authorization': `Bearer ${key}`,
+                        'Content-Type': 'application/json'
+                    };
+                    break;
+                case 'xai':
+                    headers = {
+                        'Authorization': `Bearer ${key}`,
+                        'Content-Type': 'application/json'
+                    };
+                    break;
                 default:
                     result.error_code = "UNSUPPORTED_API";
                     result.error_message = `不支持的API类型: ${apiType}`;
@@ -1107,8 +1598,9 @@
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: headers,
-                    // 不能直接设置timeout，但可以用AbortController
-                    signal: AbortSignal.timeout(10000) // 10秒超时
+                    signal: signal, // 允许取消请求
+                    // 增加超时时间
+                    signal: AbortSignal.timeout(20000) // 20秒超时
                 });
                 
                 // 根据状态码确定有效性
@@ -1128,7 +1620,7 @@
             } catch (error) {
                 // 如果主端点失败，尝试使用完成端点
                 try {
-                    const completionResult = await validateWithCompletionEndpoint(key, apiType);
+                    const completionResult = await validateWithCompletionEndpoint(key, apiType, modelName, signal);
                     return completionResult;
                 } catch (secondError) {
                     result.error_code = 'NETWORK_ERROR';
@@ -1140,7 +1632,7 @@
         }
         
         // 使用完成端点进行验证（备用方法）
-        async function validateWithCompletionEndpoint(key, apiType) {
+        async function validateWithCompletionEndpoint(key, apiType, modelName, signal) {
             const result = {
                 key: key,
                 valid: false,
@@ -1162,6 +1654,8 @@
             switch (apiType) {
                 case 'openai':
                 case 'openai_like':
+                case 'deepseek':
+                case 'xai':
                     headers = {
                         'Authorization': `Bearer ${key}`,
                         'Content-Type': 'application/json'
@@ -1192,17 +1686,15 @@
                     url = `${url}?key=${key}`;
                 }
                 
-                const payload = config.payload || {
-                    model: 'gpt-3.5-turbo',
-                    messages: [{ role: 'user', content: 'Hello' }],
-                    max_tokens: 1
-                };
+                const payload = config.payload(modelName);
                 
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: headers,
                     body: JSON.stringify(payload),
-                    signal: AbortSignal.timeout(15000) // 15秒超时
+                    signal: signal, // 允许取消请求
+                    // 增加超时时间
+                    signal: AbortSignal.timeout(30000) // 30秒超时
                 });
                 
                 // 根据状态码确定有效性
@@ -1229,6 +1721,10 @@
                     }
                 }
             } catch (error) {
+                if (error.name === 'AbortError') {
+                    throw error; // 重新抛出中止错误，让上层处理
+                }
+                
                 result.error_code = 'NETWORK_ERROR';
                 result.error_message = `网络错误: ${error.message || error.name || '未知错误'}`;
             }
@@ -1241,6 +1737,8 @@
             switch (apiType) {
                 case 'openai':
                 case 'openai_like':
+                case 'deepseek':
+                case 'xai':
                     return errorData.error?.message || '未知错误';
                 case 'claude':
                     return errorData.error?.message || errorData.detail || '未知错误';
@@ -1258,6 +1756,7 @@
                 formData.append('input_method', 'text');
                 formData.append('keys', keys.join('\n'));
                 formData.append('api_type', currentApiType);
+                formData.append('model', getSelectedModel());
                 
                 // 对于openai_like，添加自定义配置
                 if (currentApiType === 'openai_like') {
@@ -1272,7 +1771,8 @@
                 
                 const response = await fetch('/validate', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    signal: validationController.signal
                 });
                 
                 if (!response.ok) {
@@ -1283,11 +1783,26 @@
                 const data = await response.json();
                 validationResults = data.results;
                 
+                // 统计有效/无效数量
+                validationStats.valid = validationResults.filter(r => r.valid).length;
+                validationStats.invalid = validationResults.filter(r => !r.valid && r.error_code !== 'NETWORK_ERROR').length;
+                validationStats.error = validationResults.filter(r => r.error_code === 'NETWORK_ERROR').length;
+                
                 // 完成进度
                 progressCallback(100, '验证完成');
+                updateValidationStats(keys.length, keys.length);
+                
+                // 完成验证
+                finishValidation();
             } catch (error) {
-                alert(`验证失败: ${error.message}`);
-                document.getElementById('progress-container').style.display = 'none';
+                if (error.name === 'AbortError') {
+                    console.log('服务器验证被取消');
+                } else {
+                    alert(`验证失败: ${error.message}`);
+                    document.getElementById('progress-container').style.display = 'none';
+                    document.getElementById('validate-btn').disabled = false;
+                    isValidating = false;
+                }
             }
         }
         
@@ -1349,7 +1864,6 @@
             
             // 显示结果容器
             document.getElementById('results-container').style.display = 'block';
-            document.getElementById('progress-container').style.display = 'none';
         }
         
         // 隐藏部分API密钥字符
