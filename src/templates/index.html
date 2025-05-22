@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>多平台API密钥验证工具</title>
+    <title>MyAIcheck - AI接口密钥验证工具</title>
     <style>
         :root {
             --primary-color: #f06292; /* 粉色主色调 */
@@ -61,20 +61,20 @@
         }
         
         .container {
-            max-width: 1400px; /* 增加宽度以适应宽屏 */
+            max-width: 1200px; /* 减小宽度 */
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 10px; /* 减小左右内边距 */
         }
         
         header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 1.5rem; /* 减小下边距 */
             animation: fadeIn 1s ease;
         }
         
         h1 {
-            font-size: 2.4rem;
-            margin-bottom: 0.7rem;
+            font-size: 2.2rem; /* 减小字体大小 */
+            margin-bottom: 0.5rem; /* 减小下边距 */
             color: var(--primary-dark);
             font-weight: 600;
             letter-spacing: -0.5px;
@@ -82,16 +82,16 @@
         
         .description {
             color: var(--text-light);
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
+            margin-bottom: 0.8rem; /* 减小下边距 */
+            font-size: 1rem; /* 减小字体大小 */
         }
         
         .card {
             background-color: var(--card-bg);
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
-            padding: 30px;
-            margin-bottom: 2.5rem;
+            padding: 20px; /* 减小内边距 */
+            margin-bottom: 1.5rem; /* 减小下边距 */
             animation: slideUp 0.5s ease;
             border: 1px solid var(--border-color);
         }
@@ -481,6 +481,19 @@
             border-radius: 6px;
         }
         
+        .dark-mode .progress-bar-container {
+            background-color: #4C566A;
+        }
+        
+        .dark-mode .progress-bar {
+            background: linear-gradient(90deg, #81A1C1, #5E81AC);
+        }
+        
+        .dark-mode .progress-info,
+        .dark-mode .progress-stats {
+            color: #E5E9F0;
+        }
+        
         .progress-stats {
             margin-top: 12px;
             display: flex;
@@ -840,11 +853,40 @@
             color: var(--primary-color);
         }
         
+        /* 节点信息按钮样式 */
+        .node-toggle {
+            position: fixed;
+            top: 20px;
+            right: 70px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: var(--card-bg);
+            border-radius: 50%;
+            box-shadow: var(--box-shadow);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+        
+        .node-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .node-toggle-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
         /* 节点信息区域样式 */
         .node-info {
             position: fixed;
-            top: 20px;
-            right: 80px;
+            top: 70px;
+            right: 20px;
             width: 300px;
             background-color: var(--card-bg);
             border-radius: var(--border-radius);
@@ -854,6 +896,11 @@
             border: 1px solid var(--border-color);
             max-height: 500px;
             overflow-y: auto;
+            display: none;
+        }
+        
+        .node-info.visible {
+            display: block;
             animation: fadeIn 0.3s ease;
         }
         
@@ -935,18 +982,117 @@
             background-color: var(--accent-color);
             color: white;
         }
+        
+        /* 暗色模式下的文本输入和选择框样式 */
+        .dark-mode .custom-input,
+        .dark-mode .model-select,
+        .dark-mode textarea {
+            background-color: #434C5E;
+            color: #E5E9F0;
+            border-color: #4C566A;
+        }
+        
+        .dark-mode .custom-input::placeholder,
+        .dark-mode textarea::placeholder {
+            color: #D8DEE9;
+        }
+        
+        .dark-mode .toggle-label,
+        .dark-mode .input-group label,
+        .dark-mode .tab,
+        .dark-mode .toggle-container {
+            color: #E5E9F0;
+        }
+        
+        .dark-mode .toggle-container {
+            background-color: #3B4252;
+        }
+        
+        .dark-mode .tab.active {
+            color: #88C0D0;
+        }
+        
+        .dark-mode .tab::after {
+            background-color: #88C0D0;
+        }
+        
+        .dark-mode .api-settings {
+            background-color: #3B4252;
+            border-color: #4C566A;
+        }
+        
+        .dark-mode .custom-settings {
+            background-color: #2E3440;
+            border-color: #4C566A;
+        }
+        
+        .dark-mode .file-input-label {
+            background-color: #4C566A;
+            color: #E5E9F0;
+        }
+        
+        .dark-mode .file-input-label:hover {
+            background-color: #5E81AC;
+        }
+        
+        .dark-mode .file-name {
+            color: #D8DEE9;
+        }
+        
+        /* 暗色模式下的节点信息样式 */
+        .dark-mode .node-info {
+            background-color: #3B4252;
+            border-color: #4C566A;
+        }
+        
+        .dark-mode .node-info-title {
+            color: #88C0D0;
+        }
+        
+        .dark-mode .node-info-refresh {
+            background-color: #5E81AC;
+            color: #ECEFF4;
+        }
+        
+        .dark-mode .node-info-refresh:hover {
+            background-color: #81A1C1;
+        }
+        
+        .dark-mode .node-info-label {
+            color: #88C0D0;
+        }
+        
+        .dark-mode .node-info-value {
+            color: #E5E9F0;
+        }
+        
+        .dark-mode .node-toggle-icon,
+        .dark-mode .theme-toggle-icon {
+            color: #88C0D0;
+        }
+        
+        .dark-mode .node-toggle,
+        .dark-mode .theme-toggle {
+            background-color: #3B4252;
+            border-color: #4C566A;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>多平台 API 密钥验证工具</h1>
-            <p class="description">批量验证 OpenAI、Claude、Gemini、Deepseek、XAI 和其他类 OpenAI 平台的 API 密钥</p>
+            <h1>MyAIcheck</h1>
+            <p class="description">一站式AI接口密钥验证工具 | 支持OpenAI、Claude、Gemini等多平台</p>
         </header>
         
         <!-- 暗色模式切换按钮 -->
         <div class="theme-toggle" id="theme-toggle">
             <span class="theme-toggle-icon">🌙</span>
+        </div>
+        
+        <!-- 节点信息按钮 -->
+        <div class="node-toggle" id="node-toggle">
+            <span class="node-toggle-icon">📶</span>
         </div>
         
         <!-- 节点信息区域 -->
@@ -1354,6 +1500,9 @@
             
             // 初始获取节点信息
             fetchNodeInfo();
+            
+            // 节点信息按钮点击事件
+            document.getElementById('node-toggle').addEventListener('click', toggleNodeInfo);
         });
         
         // 加载主题偏好
@@ -1366,7 +1515,10 @@
         }
         
         // 切换暗色模式
-        function toggleDarkMode() {
+        function toggleDarkMode(event) {
+            // 阻止事件冒泡，避免点击事件传播导致节点信息面板隐藏
+            event.stopPropagation();
+            
             if (isDarkMode) {
                 disableDarkMode();
             } else {
@@ -1393,7 +1545,10 @@
         }
         
         // 切换节点信息显示
-        function toggleNodeInfo() {
+        function toggleNodeInfo(event) {
+            // 阻止事件冒泡
+            event.stopPropagation();
+            
             const nodeInfo = document.getElementById('node-info');
             if (nodeInfoVisible) {
                 nodeInfo.classList.remove('visible');
@@ -1404,6 +1559,25 @@
                 fetchNodeInfo(); // 获取最新节点信息
             }
         }
+        
+        // 点击其他区域隐藏节点信息
+        document.addEventListener('click', function(event) {
+            const nodeInfo = document.getElementById('node-info');
+            const nodeToggle = document.getElementById('node-toggle');
+            
+            // 如果点击的不是节点信息区域和节点信息按钮，则隐藏节点信息
+            if (nodeInfoVisible && 
+                !nodeInfo.contains(event.target) && 
+                !nodeToggle.contains(event.target)) {
+                nodeInfo.classList.remove('visible');
+                nodeInfoVisible = false;
+            }
+        });
+        
+        // 阻止节点信息区域内部点击事件冒泡
+        document.getElementById('node-info').addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
         
         // 获取节点信息
         async function fetchNodeInfo() {
@@ -1884,7 +2058,7 @@
             validationController = new AbortController();
             
             const batchSize = 10; // 批量大小
-            const totalKeys = validationQueue.length + validationResults.length;
+            const totalKeys = validationQueue.length;
             const processedCount = validationResults.length;
             
             // 如果所有批次已处理完毕
@@ -1955,6 +2129,9 @@
         function finishValidation() {
             isValidating = false;
             document.getElementById('validate-btn').disabled = false;
+            
+            // 确保进度条显示100%完成
+            updateProgress(100, '验证完成');
             
             // 显示结果
             displayResults();
