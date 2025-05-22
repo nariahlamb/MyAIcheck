@@ -3,7 +3,7 @@ Main entry point for the Flask application
 """
 import sys
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template # type: ignore
 from src.routes.api_key import api_key_bp
 
 # Add project root to path

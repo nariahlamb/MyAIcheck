@@ -1,437 +1,1047 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenAI API密钥批量验证工具</title>
+    <title>多平台API密钥验证工具</title>
     <style>
+        :root {
+            --primary-color: #4a6cf7;
+            --secondary-color: #0ac97f;
+            --error-color: #ff6b6b;
+            --warning-color: #ffa502;
+            --success-color: #2ed573;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-color: #e2e8f0;
+        }
+        
         body {
-            font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
-            background: #f5f6fa;
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
             margin: 0;
             padding: 0;
-            color: #222;
+            background-color: var(--bg-color);
+            color: var(--text-color);
         }
+        
         .container {
-            max-width: 700px;
-            margin: 40px auto;
-            background: #fff;
-            border-radius: 18px;
-            box-shadow: 0 8px 32px rgba(60,60,60,0.08);
-            padding: 32px 28px 24px 28px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
         }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
         h1 {
-            font-size: 2.1rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            letter-spacing: 0.01em;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
         }
-        .desc {
-            color: #888;
-            margin-bottom: 24px;
+        
+        .description {
+            color: #666;
+            margin-bottom: 1.5rem;
         }
-        .input-group {
-            margin-bottom: 18px;
+        
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+            margin-bottom: 2rem;
         }
-        .input-label {
-            font-size: 1rem;
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
             font-weight: 500;
-            margin-bottom: 6px;
-            display: block;
+            transition: all 0.3s;
         }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .tab:hover:not(.active) {
+            border-bottom: 3px solid #e2e2e2;
+        }
+        
+        .input-group {
+            margin-bottom: 1rem;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
         .radio-group {
             display: flex;
-            gap: 24px;
-            margin-bottom: 10px;
+            gap: 15px;
+            margin-bottom: 15px;
         }
-        .radio {
-            accent-color: #007aff;
-        }
-        textarea, input[type="file"] {
-            width: 100%;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 1rem;
-            margin-bottom: 8px;
-            background: #fafbfc;
-            transition: border 0.2s;
-        }
-        textarea:focus, input[type="file"]:focus {
-            border: 1.5px solid #007aff;
-            outline: none;
-        }
-        .btn {
-            background: #007aff;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 0;
-            font-size: 1.1rem;
-            font-weight: 500;
-            width: 100%;
-            cursor: pointer;
-            margin-top: 8px;
-            transition: background 0.2s;
-        }
-        .btn:hover {
-            background: #005ecb;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 18px;
-            background: #e9ecef;
-            border-radius: 8px;
-            margin: 18px 0 10px 0;
-            overflow: hidden;
-        }
-        .progress-inner {
-            height: 100%;
-            background: linear-gradient(90deg, #007aff 60%, #00c6fb 100%);
-            border-radius: 8px;
-            transition: width 0.3s;
-        }
-        .stats {
-            display: flex;
-            gap: 18px;
-            margin-bottom: 10px;
-        }
-        .stat-card {
-            flex: 1;
-            background: #f7f8fa;
-            border-radius: 10px;
-            padding: 14px 0;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(60,60,60,0.04);
-        }
-        .stat-title {
-            color: #888;
-            font-size: 0.98rem;
-            margin-bottom: 2px;
-        }
-        .stat-value {
-            font-size: 1.3rem;
-            font-weight: 600;
-        }
-        .table-wrap {
-            overflow-x: auto;
-            margin-top: 18px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        th, td {
-            padding: 8px 10px;
-            text-align: left;
-        }
-        th {
-            background: #f5f6fa;
-            font-weight: 500;
-        }
-        tr:nth-child(even) {
-            background: #fafbfc;
-        }
-        .badge {
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
-        .badge-valid {
-            background: #34c759;
-            color: #fff;
-        }
-        .badge-invalid {
-            background: #ff3b30;
-            color: #fff;
-        }
-        .badge-warn {
-            background: #ffcc00;
-            color: #222;
-        }
-        .export-btns {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 10px;
-        }
-        .export-btn {
-            background: #f1f2f6;
-            color: #007aff;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 18px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .export-btn:hover {
-            background: #e1e3e8;
-        }
-        .loading {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.7);
+        
+        .radio-option {
             display: flex;
             align-items: center;
-            justify-content: center;
-            z-index: 9999;
         }
-        .loading-inner {
-            background: #fff;
-            border-radius: 12px;
-            padding: 32px 40px;
-            box-shadow: 0 4px 24px rgba(60,60,60,0.10);
+        
+        .radio-option input {
+            margin-right: 5px;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        
+        .file-input {
+            margin-top: 10px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #3a5ce4;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #cbd5e0;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+        
+        .progress {
+            margin-top: 1.5rem;
+            display: none;
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: #e2e8f0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            transition: width 0.3s;
+            width: 0%;
+        }
+        
+        .results-container {
+            margin-top: 2rem;
+            display: none;
+        }
+        
+        .results-summary {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .summary-item {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
             text-align: center;
         }
-        .loading-spinner {
-            width: 38px;
-            height: 38px;
-            border: 4px solid #e9ecef;
-            border-top: 4px solid #007aff;
+        
+        .summary-total {
+            background-color: #e2e8f0;
+        }
+        
+        .summary-valid {
+            background-color: rgba(46, 213, 115, 0.1);
+            color: var(--success-color);
+        }
+        
+        .summary-invalid {
+            background-color: rgba(255, 107, 107, 0.1);
+            color: var(--error-color);
+        }
+        
+        .summary-item h3 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        
+        .summary-item p {
+            font-size: 2rem;
+            margin: 8px 0 0;
+            font-weight: 600;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .results-table th, .results-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .results-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+        
+        .valid-key {
+            color: var(--success-color);
+            font-weight: 500;
+        }
+        
+        .invalid-key {
+            color: var(--error-color);
+        }
+        
+        .network-error {
+            color: var(--warning-color);
+        }
+        
+        .export-container {
+            margin-top: 1.5rem;
+            text-align: right;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .api-type-selector {
+            margin-bottom: 20px;
+        }
+        
+        .api-type-btn {
+            padding: 10px 15px;
+            margin-right: 10px;
+            border: 1px solid var(--border-color);
+            background-color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .api-type-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .toggle-label {
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 18px auto;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--primary-color);
         }
-        @media (max-width: 600px) {
-            .container { padding: 16px 4px; }
-            .stats { flex-direction: column; gap: 8px; }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .help-text {
+            font-size: 14px;
+            color: #666;
+            margin-left: 10px;
+        }
+        
+        .api-settings {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #f9fafc;
+        }
+        
+        @media (max-width: 768px) {
+            .results-summary {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .api-type-selector {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .api-type-btn {
+                margin-bottom: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>OpenAI API密钥批量验证</h1>
-        <div class="desc">支持1000+密钥，极速分片验证，结果可导出CSV</div>
-        <form id="validation-form">
-            <div class="input-group">
-                <span class="input-label">输入方式</span>
-                <div class="radio-group">
-                    <label><input type="radio" name="input-method" value="text" class="radio" checked> 粘贴/输入</label>
-                    <label><input type="radio" name="input-method" value="file" class="radio"> 上传文件</label>
+        <header>
+            <h1>多平台 API 密钥验证工具</h1>
+            <p class="description">批量验证 OpenAI、Claude 和 Gemini API 密钥的可用性</p>
+        </header>
+        
+        <div class="card">
+            <div class="api-type-selector">
+                <button class="api-type-btn active" data-api-type="openai">OpenAI</button>
+                <button class="api-type-btn" data-api-type="claude">Claude</button>
+                <button class="api-type-btn" data-api-type="gemini">Gemini</button>
+            </div>
+            
+            <div class="toggle-container">
+                <span class="toggle-label">使用浏览器端验证:</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="client-side-toggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="help-text">推荐启用，解决网络连接问题</span>
+            </div>
+            
+            <div class="api-settings" id="openai-settings">
+                <p><strong>验证 OpenAI API 密钥</strong> - 格式: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
+            </div>
+            
+            <div class="api-settings" id="claude-settings" style="display: none;">
+                <p><strong>验证 Claude API 密钥</strong> - 将测试 claude-3.5-sonnet 模型</p>
+            </div>
+            
+            <div class="api-settings" id="gemini-settings" style="display: none;">
+                <p><strong>验证 Gemini API 密钥</strong> - 将测试 gemini-2.5-flash-preview-04-17 模型</p>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="text-input">文本输入</div>
+                <div class="tab" data-tab="file-input">文件输入</div>
+            </div>
+            
+            <div class="input-group" id="text-input-container">
+                <label for="keys-input">API 密钥 (每行一个):</label>
+                <textarea id="keys-input" placeholder="在此输入您的API密钥，每行一个..."></textarea>
+            </div>
+            
+            <div class="input-group" id="file-input-container" style="display: none;">
+                <label for="file-input">上传 CSV 或文本文件:</label>
+                <input type="file" id="file-input" class="file-input" accept=".csv,.txt">
+                <p class="help-text">文件第一列应包含API密钥</p>
+            </div>
+            
+            <div class="actions">
+                <button id="validate-btn" class="btn">验证密钥</button>
+                <button id="clear-btn" class="btn btn-secondary">清除</button>
+            </div>
+            
+            <div class="progress" id="progress-container">
+                <div class="progress-info">
+                    <span id="progress-text">验证中...</span>
+                    <span id="progress-percentage">0%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
                 </div>
             </div>
-            <div class="input-group" id="text-input-container">
-                <span class="input-label">API密钥列表（每行一个）</span>
-                <textarea id="api-keys" rows="8" placeholder="sk-...\nsk-...\nsk-...\n"></textarea>
-            </div>
-            <div class="input-group" id="file-input-container" style="display:none;">
-                <span class="input-label">上传CSV或TXT文件</span>
-                <input type="file" id="api-keys-file" accept=".csv,.txt">
-            </div>
-            <button type="submit" class="btn" id="validate-btn">开始验证</button>
-        </form>
-        <div class="progress-bar" id="progress-bar" style="display:none;">
-            <div class="progress-inner" id="progress-inner" style="width:0%"></div>
         </div>
-        <div class="stats" id="stats" style="display:none;">
-            <div class="stat-card">
-                <div class="stat-title">总计</div>
-                <div class="stat-value" id="total-count">0</div>
+        
+        <div class="results-container" id="results-container">
+            <h2>验证结果</h2>
+            
+            <div class="results-summary">
+                <div class="summary-item summary-total">
+                    <h3>总计</h3>
+                    <p id="total-count">0</p>
+                </div>
+                <div class="summary-item summary-valid">
+                    <h3>有效</h3>
+                    <p id="valid-count">0</p>
+                </div>
+                <div class="summary-item summary-invalid">
+                    <h3>无效</h3>
+                    <p id="invalid-count">0</p>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-title">有效</div>
-                <div class="stat-value" id="valid-count">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-title">无效</div>
-                <div class="stat-value" id="invalid-count">0</div>
-            </div>
-        </div>
-        <div class="export-btns" id="export-btns" style="display:none;">
-            <button class="export-btn" id="export-with-details">导出完整结果</button>
-            <button class="export-btn" id="export-keys-only">仅导出密钥</button>
-        </div>
-        <div class="table-wrap" id="results-table-wrap" style="display:none;">
-            <table>
+            
+            <table class="results-table">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>API密钥</th>
+                        <th>密钥</th>
                         <th>状态</th>
-                        <th>错误码</th>
                         <th>错误信息</th>
                     </tr>
                 </thead>
-                <tbody id="results-table-body"></tbody>
+                <tbody id="results-body">
+                    <!-- 结果会被动态添加到这里 -->
+                </tbody>
             </table>
+            
+            <div class="export-container">
+                <button id="export-btn" class="btn">导出结果</button>
+            </div>
         </div>
     </div>
-    <div class="loading" id="loading-overlay" style="display:none;">
-        <div class="loading-inner">
-            <div class="loading-spinner"></div>
-            <div id="loading-message">正在验证API密钥...</div>
-        </div>
-    </div>
+    
     <script>
-    // 极简Mac风分片上传与UI逻辑
-    const form = document.getElementById('validation-form');
-    const textInputRadio = form.querySelector('input[value="text"]');
-    const fileInputRadio = form.querySelector('input[value="file"]');
-    const textInputContainer = document.getElementById('text-input-container');
-    const fileInputContainer = document.getElementById('file-input-container');
-    const apiKeysTextarea = document.getElementById('api-keys');
-    const apiKeysFile = document.getElementById('api-keys-file');
-    const validateBtn = document.getElementById('validate-btn');
-    const progressBar = document.getElementById('progress-bar');
-    const progressInner = document.getElementById('progress-inner');
-    const stats = document.getElementById('stats');
-    const totalCount = document.getElementById('total-count');
-    const validCount = document.getElementById('valid-count');
-    const invalidCount = document.getElementById('invalid-count');
-    const exportBtns = document.getElementById('export-btns');
-    const exportWithDetailsBtn = document.getElementById('export-with-details');
-    const exportKeysOnlyBtn = document.getElementById('export-keys-only');
-    const resultsTableWrap = document.getElementById('results-table-wrap');
-    const resultsTableBody = document.getElementById('results-table-body');
-    const loadingOverlay = document.getElementById('loading-overlay');
-    const loadingMessage = document.getElementById('loading-message');
-
-    let validationResults = [];
-
-    textInputRadio.addEventListener('change', function() {
-        if (this.checked) {
-            textInputContainer.style.display = '';
-            fileInputContainer.style.display = 'none';
+        // 全局变量
+        let currentApiType = 'openai';
+        let validationResults = [];
+        let isClientSideValidation = true;
+        
+        // API验证端点配置
+        const API_ENDPOINTS = {
+            openai: {
+                models: 'https://api.openai.com/v1/models',
+                completions: 'https://api.openai.com/v1/chat/completions',
+                payload: {
+                    model: 'gpt-3.5-turbo',
+                    messages: [{ role: 'user', content: 'Hello' }],
+                    max_tokens: 1
+                }
+            },
+            claude: {
+                models: 'https://api.anthropic.com/v1/models',
+                completions: 'https://api.anthropic.com/v1/messages',
+                payload: {
+                    model: 'claude-3.5-sonnet',
+                    max_tokens: 1,
+                    messages: [{ role: 'user', content: 'Hello' }]
+                }
+            },
+            gemini: {
+                models: 'https://generativelanguage.googleapis.com/v1beta/models',
+                completions: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent',
+                payload: {
+                    contents: [{ parts: [{ text: 'Hello' }] }]
+                }
+            }
+        };
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 切换API类型
+            document.querySelectorAll('.api-type-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    // 更新按钮状态
+                    document.querySelectorAll('.api-type-btn').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 更新当前API类型
+                    currentApiType = this.dataset.apiType;
+                    
+                    // 更新设置显示
+                    document.querySelectorAll('.api-settings').forEach(setting => setting.style.display = 'none');
+                    document.getElementById(`${currentApiType}-settings`).style.display = 'block';
+                });
+            });
+            
+            // 切换输入方式
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const tabName = this.dataset.tab;
+                    document.getElementById('text-input-container').style.display = tabName === 'text-input' ? 'block' : 'none';
+                    document.getElementById('file-input-container').style.display = tabName === 'file-input' ? 'block' : 'none';
+                });
+            });
+            
+            // 验证按钮
+            document.getElementById('validate-btn').addEventListener('click', startValidation);
+            
+            // 清除按钮
+            document.getElementById('clear-btn').addEventListener('click', function() {
+                document.getElementById('keys-input').value = '';
+                document.getElementById('file-input').value = '';
+                document.getElementById('results-container').style.display = 'none';
+                document.getElementById('progress-container').style.display = 'none';
+                validationResults = [];
+            });
+            
+            // 导出按钮
+            document.getElementById('export-btn').addEventListener('click', exportResults);
+            
+            // 客户端验证切换
+            document.getElementById('client-side-toggle').addEventListener('change', function() {
+                isClientSideValidation = this.checked;
+            });
+        });
+        
+        // 解析输入获取API密钥
+        function getApiKeys() {
+            const activeTab = document.querySelector('.tab.active').dataset.tab;
+            
+            if (activeTab === 'text-input') {
+                const inputText = document.getElementById('keys-input').value.trim();
+                if (!inputText) return [];
+                
+                // 分行并过滤空行
+                return inputText.split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line.length > 0);
+            } else {
+                const fileInput = document.getElementById('file-input');
+                if (!fileInput.files || fileInput.files.length === 0) return [];
+                
+                // 文件处理在单独的函数中进行
+                return []; // 暂时返回空数组，实际会在parseFile函数中异步处理
+            }
         }
-    });
-    fileInputRadio.addEventListener('change', function() {
-        if (this.checked) {
-            textInputContainer.style.display = 'none';
-            fileInputContainer.style.display = '';
+        
+        // 解析文件内容
+        function parseFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    const content = event.target.result;
+                    let keys = [];
+                    
+                    if (file.name.endsWith('.csv')) {
+                        // 解析CSV
+                        const lines = content.split('\n');
+                        keys = lines
+                            .map(line => {
+                                const columns = line.split(',');
+                                return columns[0] ? columns[0].trim() : '';
+                            })
+                            .filter(key => key.length > 0);
+                    } else {
+                        // 解析文本文件
+                        keys = content.split('\n')
+                            .map(line => line.trim())
+                            .filter(line => line.length > 0);
+                    }
+                    
+                    resolve(keys);
+                };
+                
+                reader.onerror = function() {
+                    reject(new Error('文件读取失败'));
+                };
+                
+                reader.readAsText(file);
+            });
         }
-    });
-
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        let keys = [];
-        if (textInputRadio.checked) {
-            keys = apiKeysTextarea.value.split('\n').map(x => x.trim()).filter(x => x);
-        } else {
-            if (!apiKeysFile.files[0]) {
-                alert('请选择文件');
+        
+        // 开始验证过程
+        async function startValidation() {
+            // 重置UI
+            document.getElementById('results-container').style.display = 'none';
+            document.getElementById('results-body').innerHTML = '';
+            validationResults = [];
+            
+            // 获取API密钥
+            let keys = getApiKeys();
+            
+            // 如果是文件输入，处理文件
+            const activeTab = document.querySelector('.tab.active').dataset.tab;
+            if (activeTab === 'file-input') {
+                const fileInput = document.getElementById('file-input');
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    alert('请选择一个文件');
+                    return;
+                }
+                
+                try {
+                    keys = await parseFile(fileInput.files[0]);
+                } catch (error) {
+                    alert(`文件解析错误: ${error.message}`);
+                    return;
+                }
+            }
+            
+            // 验证是否有密钥
+            if (keys.length === 0) {
+                alert('未找到API密钥');
                 return;
             }
-            const file = apiKeysFile.files[0];
-            const text = await file.text();
-            keys = text.split(/\r?\n/).map(x => x.trim()).filter(x => x);
+            
+            // 限制批量验证数量
+            if (keys.length > 500) {
+                alert('一次最多验证500个密钥');
+                return;
+            }
+            
+            // 显示进度条
+            const progressContainer = document.getElementById('progress-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const progressPercentage = document.getElementById('progress-percentage');
+            
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            progressText.textContent = '准备验证...';
+            progressPercentage.textContent = '0%';
+            
+            // 选择验证方式
+            if (isClientSideValidation) {
+                await validateKeysClientSide(keys, updateProgress);
+            } else {
+                await validateKeysServerSide(keys, updateProgress);
+            }
+            
+            // 显示结果
+            displayResults();
         }
-        if (!keys.length) {
-            alert('请输入或上传至少一个API密钥');
-            return;
-        }
-        // 分片上传
-        const batchSize = 20;
-        const total = keys.length;
-        let done = 0;
-        let valid = 0;
-        let invalid = 0;
-        validationResults = [];
-        progressBar.style.display = '';
-        progressInner.style.width = '0%';
-        stats.style.display = 'none';
-        exportBtns.style.display = 'none';
-        resultsTableWrap.style.display = 'none';
-        resultsTableBody.innerHTML = '';
-        loadingOverlay.style.display = '';
-        loadingMessage.textContent = `正在分片验证${total}个密钥...`;
-        for (let i = 0; i < total; i += batchSize) {
-            const batch = keys.slice(i, i + batchSize);
-            try {
-                const resp = await fetch('/api/validate-keys', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ keys: batch, batch_size: batchSize })
-                });
-                if (!resp.ok) throw new Error('网络错误');
-                const data = await resp.json();
-                validationResults.push(...data.results);
-                valid += data.valid;
-                invalid += data.invalid;
-                done += batch.length;
+        
+        // 客户端验证密钥（浏览器端验证）
+        async function validateKeysClientSide(keys, progressCallback) {
+            const batchSize = 5; // 并发批量大小
+            const totalKeys = keys.length;
+            let completedCount = 0;
+            
+            validationResults = [];
+            
+            // 批量处理
+            for (let i = 0; i < keys.length; i += batchSize) {
+                const batch = keys.slice(i, i + batchSize);
+                const batchPromises = batch.map(key => validateSingleKeyClientSide(key, currentApiType));
+                
+                // 等待当前批次完成
+                const batchResults = await Promise.all(batchPromises);
+                validationResults.push(...batchResults);
+                
                 // 更新进度
-                progressInner.style.width = `${Math.round(done / total * 100)}%`;
-                loadingMessage.textContent = `已完成${done}/${total}...`;
-            } catch (err) {
-                // 批量失败，全部记为未知错误
-                batch.forEach(key => {
-                    validationResults.push({ key, valid: false, error_code: 'NETWORK', error_message: '网络错误' });
-                    invalid++;
-                    done++;
-                });
+                completedCount += batch.length;
+                const progress = (completedCount / totalKeys) * 100;
+                progressCallback(progress, `已验证 ${completedCount}/${totalKeys}`);
+                
+                // 添加短暂延迟避免API限制
+                if (i + batchSize < keys.length) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
             }
         }
-        // 展示统计
-        totalCount.textContent = total;
-        validCount.textContent = valid;
-        invalidCount.textContent = invalid;
-        stats.style.display = '';
-        exportBtns.style.display = '';
-        resultsTableWrap.style.display = '';
-        // 渲染表格
-        resultsTableBody.innerHTML = '';
-        validationResults.forEach((result, idx) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `<td>${idx + 1}</td>
-                <td>${maskApiKey(result.key)}</td>
-                <td>${result.valid ? '<span class="badge badge-valid">有效</span>' : '<span class="badge badge-invalid">无效</span>'}</td>
-                <td>${result.error_code || '-'}</td>
-                <td>${result.error_message || '-'}</td>`;
-            resultsTableBody.appendChild(row);
-        });
-        progressBar.style.display = 'none';
-        loadingOverlay.style.display = 'none';
-    });
-
-    function maskApiKey(key) {
-        if (!key) return '';
-        if (key.length > 12) return key.slice(0, 8) + '••••••••' + key.slice(-4);
-        return key;
-    }
-
-    exportWithDetailsBtn.addEventListener('click', function() {
-        exportResults(true);
-    });
-    exportKeysOnlyBtn.addEventListener('click', function() {
-        exportResults(false);
-    });
-    function exportResults(includeDetails) {
-        if (!validationResults.length) {
-            alert('没有可导出的结果');
-            return;
+        
+        // 验证单个密钥（客户端）
+        async function validateSingleKeyClientSide(key, apiType) {
+            const result = {
+                key: key,
+                valid: false,
+                error_code: null,
+                error_message: null
+            };
+            
+            // 选择端点
+            const endpoint = API_ENDPOINTS[apiType].models;
+            let headers = {};
+            
+            // 设置不同API的头信息
+            switch (apiType) {
+                case 'openai':
+                    headers = {
+                        'Authorization': `Bearer ${key}`,
+                        'Content-Type': 'application/json'
+                    };
+                    break;
+                case 'claude':
+                    headers = {
+                        'x-api-key': key,
+                        'anthropic-version': '2023-06-01',
+                        'Content-Type': 'application/json'
+                    };
+                    break;
+                case 'gemini':
+                    // Gemini使用查询参数而非头部
+                    headers = {
+                        'Content-Type': 'application/json'
+                    };
+                    break;
+            }
+            
+            try {
+                // 使用fetch进行API调用
+                let url = endpoint;
+                if (apiType === 'gemini') {
+                    url = `${endpoint}?key=${key}`;
+                }
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: headers,
+                    timeout: 10000 // 10秒超时
+                });
+                
+                // 根据状态码确定有效性
+                if (response.ok) {
+                    result.valid = true;
+                } else {
+                    // 尝试读取错误信息
+                    try {
+                        const errorData = await response.json();
+                        result.error_code = response.status.toString();
+                        result.error_message = getErrorMessage(errorData, apiType);
+                    } catch (e) {
+                        result.error_code = response.status.toString();
+                        result.error_message = `HTTP错误: ${response.status}`;
+                    }
+                }
+            } catch (error) {
+                // 如果主端点失败，尝试使用完成端点
+                try {
+                    const completionResult = await validateWithCompletionEndpoint(key, apiType);
+                    return completionResult;
+                } catch (secondError) {
+                    result.error_code = 'NETWORK_ERROR';
+                    result.error_message = `网络错误: ${error.message}`;
+                }
+            }
+            
+            return result;
         }
-        let csv = '';
-        if (includeDetails) {
-            csv += 'key,valid,error_code,error_message\n';
-            validationResults.forEach(r => {
-                csv += `"${r.key}",${r.valid},${r.error_code || ''},"${(r.error_message || '').replace(/"/g, '""')}"\n`;
-            });
-        } else {
-            csv += 'key\n';
-            validationResults.forEach(r => {
-                csv += `"${r.key}"\n`;
-            });
+        
+        // 使用完成端点进行验证（备用方法）
+        async function validateWithCompletionEndpoint(key, apiType) {
+            const result = {
+                key: key,
+                valid: false,
+                error_code: null,
+                error_message: null
+            };
+            
+            // 获取配置
+            const config = API_ENDPOINTS[apiType];
+            let headers = {};
+            
+            // 设置不同API的头信息
+            switch (apiType) {
+                case 'openai':
+                    headers = {
+                        'Authorization': `Bearer ${key}`,
+                        'Content-Type': 'application/json'
+                    };
+                    break;
+                case 'claude':
+                    headers = {
+                        'x-api-key': key,
+                        'anthropic-version': '2023-06-01',
+                        'Content-Type': 'application/json'
+                    };
+                    break;
+                case 'gemini':
+                    headers = {
+                        'Content-Type': 'application/json'
+                    };
+                    break;
+            }
+            
+            try {
+                // 使用fetch进行API调用
+                let url = config.completions;
+                if (apiType === 'gemini') {
+                    url = `${url}?key=${key}`;
+                }
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(config.payload),
+                    timeout: 10000 // 10秒超时
+                });
+                
+                // 根据状态码确定有效性
+                if (response.ok) {
+                    result.valid = true;
+                } else {
+                    // 尝试读取错误信息
+                    try {
+                        const errorData = await response.json();
+                        result.error_code = response.status.toString();
+                        
+                        // 特殊情况：401但消息指明无效API密钥
+                        if (response.status === 401 || 
+                            errorData.error?.message?.includes('key') || 
+                            errorData.error?.includes('key') ||
+                            errorData.error?.message?.includes('auth')) {
+                            result.error_message = '无效的API密钥';
+                        } else {
+                            result.error_message = getErrorMessage(errorData, apiType);
+                        }
+                    } catch (e) {
+                        result.error_code = response.status.toString();
+                        result.error_message = `HTTP错误: ${response.status}`;
+                    }
+                }
+            } catch (error) {
+                result.error_code = 'NETWORK_ERROR';
+                result.error_message = `网络错误: ${error.message}`;
+            }
+            
+            return result;
         }
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'openai_api_keys_validation.csv';
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }, 100);
-    }
+        
+        // 从错误响应中提取消息
+        function getErrorMessage(errorData, apiType) {
+            switch (apiType) {
+                case 'openai':
+                    return errorData.error?.message || '未知错误';
+                case 'claude':
+                    return errorData.error?.message || errorData.detail || '未知错误';
+                case 'gemini':
+                    return errorData.error?.message || errorData.error || '未知错误';
+                default:
+                    return '未知错误';
+            }
+        }
+        
+        // 服务器端验证密钥
+        async function validateKeysServerSide(keys, progressCallback) {
+            try {
+                const formData = new FormData();
+                formData.append('input_method', 'text');
+                formData.append('keys', keys.join('\n'));
+                formData.append('api_type', currentApiType);
+                
+                const response = await fetch('/validate', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '服务器验证失败');
+                }
+                
+                const data = await response.json();
+                validationResults = data.results;
+                
+                // 完成进度
+                progressCallback(100, '验证完成');
+            } catch (error) {
+                alert(`验证失败: ${error.message}`);
+                document.getElementById('progress-container').style.display = 'none';
+            }
+        }
+        
+        // 更新进度条
+        function updateProgress(percentage, text) {
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const progressPercentage = document.getElementById('progress-percentage');
+            
+            progressBar.style.width = `${percentage}%`;
+            progressText.textContent = text;
+            progressPercentage.textContent = `${Math.round(percentage)}%`;
+        }
+        
+        // 显示验证结果
+        function displayResults() {
+            if (validationResults.length === 0) return;
+            
+            // 统计数据
+            const total = validationResults.length;
+            const valid = validationResults.filter(r => r.valid).length;
+            const invalid = total - valid;
+            
+            // 更新摘要
+            document.getElementById('total-count').textContent = total;
+            document.getElementById('valid-count').textContent = valid;
+            document.getElementById('invalid-count').textContent = invalid;
+            
+            // 生成表格行
+            const tableBody = document.getElementById('results-body');
+            tableBody.innerHTML = '';
+            
+            validationResults.forEach(result => {
+                const row = document.createElement('tr');
+                
+                // 密钥单元格（隐藏部分字符）
+                const keyCell = document.createElement('td');
+                keyCell.textContent = maskApiKey(result.key);
+                row.appendChild(keyCell);
+                
+                // 状态单元格
+                const statusCell = document.createElement('td');
+                if (result.valid) {
+                    statusCell.innerHTML = '<span class="valid-key">有效</span>';
+                } else if (result.error_code === 'NETWORK_ERROR') {
+                    statusCell.innerHTML = '<span class="network-error">网络错误</span>';
+                } else {
+                    statusCell.innerHTML = '<span class="invalid-key">无效</span>';
+                }
+                row.appendChild(statusCell);
+                
+                // 错误信息单元格
+                const errorCell = document.createElement('td');
+                errorCell.textContent = result.error_message || '-';
+                row.appendChild(errorCell);
+                
+                tableBody.appendChild(row);
+            });
+            
+            // 显示结果容器
+            document.getElementById('results-container').style.display = 'block';
+            document.getElementById('progress-container').style.display = 'none';
+        }
+        
+        // 隐藏部分API密钥字符
+        function maskApiKey(key) {
+            if (!key || key.length < 8) return key;
+            
+            const firstFour = key.slice(0, 4);
+            const lastFour = key.slice(-4);
+            return `${firstFour}...${lastFour}`;
+        }
+        
+        // 导出结果
+        function exportResults() {
+            if (validationResults.length === 0) {
+                alert('没有结果可导出');
+                return;
+            }
+            
+            // 创建CSV内容
+            let csvContent = 'API密钥,状态,错误代码,错误信息\n';
+            
+            validationResults.forEach(result => {
+                const status = result.valid ? '有效' : '无效';
+                const errorCode = result.error_code || '';
+                const errorMessage = result.error_message || '';
+                
+                // 正确处理CSV格式
+                const escapedKey = `"${result.key.replace(/"/g, '""')}"`;
+                const escapedMessage = `"${errorMessage.replace(/"/g, '""')}"`;
+                
+                csvContent += `${escapedKey},${status},${errorCode},${escapedMessage}\n`;
+            });
+            
+            // 创建并下载文件
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `api_keys_validation_${currentApiType}_${getFormattedDate()}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // 获取格式化日期
+        function getFormattedDate() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}${month}${day}`;
+        }
     </script>
 </body>
 </html>

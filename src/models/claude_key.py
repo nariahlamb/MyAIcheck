@@ -1,49 +1,48 @@
 """
-API Key validation model for OpenAI API keys
+API Key validation model for Claude API keys
 """
 import asyncio
 import aiohttp
 import csv
 import io
+import json
 import time
 import random
-import json
 from typing import Dict, List, Tuple, Optional
 
 
-class OpenAIKeyValidator:
-    """Class for validating OpenAI API keys in bulk"""
+class ClaudeKeyValidator:
+    """Class for validating Claude API keys in bulk"""
     
-    # 主要和备用OpenAI API端点
-    PRIMARY_API_URL = "https://api.openai.com/v1/models"
-    BACKUP_API_URLS = [
-        "https://api.openai.com/v1/engines",  # 旧版端点
-        "https://api.openai.com/v1/completions"  # 完成端点
-    ]
+    # API endpoints
+    PRIMARY_API_URL = "https://api.anthropic.com/v1/models"
+    BACKUP_API_URL = "https://api.anthropic.com/v1/messages"
     
-    # 用于完成端点的简单请求体
-    COMPLETIONS_PAYLOAD = {
-        "model": "gpt-3.5-turbo-instruct",
-        "prompt": "Hello",
+    # Test message payload
+    TEST_PAYLOAD = {
+        "model": "claude-3.5-sonnet",
         "max_tokens": 1,
-        "temperature": 0
+        "messages": [
+            {"role": "user", "content": "Hello"}
+        ]
     }
     
     @staticmethod
-    async def validate_single_key(session: aiohttp.ClientSession, api_key: str, retry_count=3) -> Dict:
+    async def validate_single_key(session: aiohttp.ClientSession, api_key: str, retry_count=2) -> Dict:
         """
-        Validate a single OpenAI API key with retry mechanism and multiple endpoints
+        Validate a single Claude API key with retry mechanism
         
         Args:
             session: aiohttp client session
-            api_key: OpenAI API key to validate
+            api_key: Claude API key to validate
             retry_count: Number of retry attempts
             
         Returns:
             Dictionary with validation result
         """
         headers = {
-            "Authorization": f"Bearer {api_key}",
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
             "Content-Type": "application/json"
         }
         
@@ -54,120 +53,110 @@ class OpenAIKeyValidator:
             "error_message": None
         }
         
-        # 尝试所有API端点
-        endpoints = [OpenAIKeyValidator.PRIMARY_API_URL] + OpenAIKeyValidator.BACKUP_API_URLS
-        
-        for endpoint_index, endpoint in enumerate(endpoints):
-            # 只有主端点失败时才尝试备用端点
-            if endpoint_index > 0 and result["valid"]:
-                break
+        # 尝试主端点
+        for attempt in range(retry_count):
+            try:
+                # 添加随机延迟避免请求过于集中
+                if attempt > 0:
+                    await asyncio.sleep(random.uniform(1, 2))
                 
-            # 如果切换到完成端点，需要使用POST请求
-            is_completions_endpoint = "completions" in endpoint
+                response = await session.get(
+                    ClaudeKeyValidator.PRIMARY_API_URL,
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=10)
+                )
                 
-            for attempt in range(retry_count):
+                status_code = response.status
+                
                 try:
-                    # 添加随机延迟避免请求过于集中
-                    if attempt > 0 or endpoint_index > 0:
-                        await asyncio.sleep(random.uniform(1, 2))
-                    
-                    # 根据端点选择GET或POST方法
-                    if is_completions_endpoint:
-                        response = await session.post(
-                            endpoint, 
-                            headers=headers, 
-                            json=OpenAIKeyValidator.COMPLETIONS_PAYLOAD,
-                            timeout=aiohttp.ClientTimeout(total=15)
-                        )
-                    else:
-                        response = await session.get(
-                            endpoint, 
-                            headers=headers,
-                            timeout=aiohttp.ClientTimeout(total=15)
-                        )
-                    
-                    # 记录详细的响应信息用于调试
-                    status_code = response.status
-                    
+                    response_text = await response.text()
                     try:
-                        response_text = await response.text()
-                        try:
-                            response_json = json.loads(response_text)
-                        except:
-                            response_json = {"raw_text": response_text[:100]}
+                        response_json = json.loads(response_text)
                     except:
-                        response_text = "无法读取响应内容"
-                        response_json = {}
-                    
-                    # 检查响应状态
-                    if status_code == 200:
-                        result["valid"] = True
-                        break
-                    elif status_code == 401:
-                        # 明确的无效密钥
-                        result["valid"] = False
-                        result["error_code"] = "INVALID_KEY"
-                        result["error_message"] = response_json.get("error", {}).get("message", "无效的API密钥")
-                        break
-                    elif status_code == 429:  # 速率限制
-                        result["error_code"] = "RATE_LIMIT"
-                        result["error_message"] = "OpenAI API速率限制"
-                        await asyncio.sleep(2 * (attempt + 1))
-                        continue
-                    else:
-                        # 记录更详细的错误信息
-                        result["error_code"] = f"HTTP_{status_code}"
-                        error_message = response_json.get("error", {}).get("message", "未知错误")
-                        result["error_message"] = f"服务器错误: {error_message}"
-                        
-                        # 如果是服务器错误，尝试重试
-                        if status_code >= 500:
-                            if attempt < retry_count - 1:
-                                await asyncio.sleep(1 * (attempt + 1))
-                                continue
-                        break
+                        response_json = {"raw_text": response_text[:100]}
+                except:
+                    response_text = "无法读取响应内容"
+                    response_json = {}
                 
-                except aiohttp.ClientConnectorError as e:
-                    result["error_code"] = "CONNECTION_ERROR"
-                    result["error_message"] = f"连接错误: {str(e)}"
-                    # 非最后一次尝试和非最后一个端点时继续
-                    if attempt < retry_count - 1 or endpoint_index < len(endpoints) - 1:
-                        continue
+                # 检查响应状态
+                if status_code == 200:
+                    result["valid"] = True
+                    break
+                elif status_code == 401:
+                    # 明确的无效密钥
+                    result["valid"] = False
+                    result["error_code"] = "INVALID_KEY"
+                    result["error_message"] = response_json.get("error", {}).get("message", "无效的API密钥")
+                    break
+                elif status_code == 429:  # 速率限制
+                    result["error_code"] = "RATE_LIMIT"
+                    result["error_message"] = "Claude API速率限制"
+                    await asyncio.sleep(2)
+                    continue
+                else:
+                    # 记录错误信息
+                    result["error_code"] = f"HTTP_{status_code}"
+                    error_message = response_json.get("error", {}).get("message", "未知错误")
+                    result["error_message"] = f"服务器错误: {error_message}"
                     break
                     
-                except aiohttp.ClientError as e:
-                    result["error_code"] = "NETWORK"
-                    result["error_message"] = f"网络错误: {str(e)}"
-                    if attempt < retry_count - 1:
-                        await asyncio.sleep(1)
-                        continue
-                    break
-                    
-                except asyncio.TimeoutError:
-                    result["error_code"] = "TIMEOUT"
-                    result["error_message"] = "请求超时"
-                    if attempt < retry_count - 1:
-                        await asyncio.sleep(1)
-                        continue
-                    break
-                    
-                except Exception as e:
-                    result["error_code"] = "UNKNOWN_ERROR"
-                    result["error_message"] = f"未知错误: {str(e)}"
-                    if attempt < retry_count - 1:
-                        continue
-                    break
-            
-            # 如果此端点验证成功，不再尝试其他端点
-            if result["valid"]:
+            except aiohttp.ClientConnectorError as e:
+                result["error_code"] = "CONNECTION_ERROR"
+                result["error_message"] = f"连接错误: {str(e)}"
+                # 切换到备用端点
                 break
+            except aiohttp.ClientError as e:
+                result["error_code"] = "NETWORK_ERROR"
+                result["error_message"] = f"网络错误: {str(e)}"
+                break
+            except asyncio.TimeoutError:
+                result["error_code"] = "TIMEOUT"
+                result["error_message"] = "请求超时"
+                break
+            except Exception as e:
+                result["error_code"] = "UNKNOWN_ERROR"
+                result["error_message"] = f"未知错误: {str(e)}"
+                break
+        
+        # 如果主端点失败，尝试备用端点
+        if not result["valid"] and result["error_code"] in ["CONNECTION_ERROR", "TIMEOUT"]:
+            try:
+                # 使用POST请求验证
+                response = await session.post(
+                    ClaudeKeyValidator.BACKUP_API_URL,
+                    headers=headers,
+                    json=ClaudeKeyValidator.TEST_PAYLOAD,
+                    timeout=aiohttp.ClientTimeout(total=15)
+                )
+                
+                status_code = response.status
+                
+                if status_code == 200 or status_code == 201:
+                    result["valid"] = True
+                    result["error_code"] = None
+                    result["error_message"] = None
+                elif status_code == 401:
+                    result["valid"] = False
+                    result["error_code"] = "INVALID_KEY"
+                    result["error_message"] = "无效的API密钥"
+                else:
+                    try:
+                        error_data = await response.json()
+                        result["error_code"] = f"HTTP_{status_code}"
+                        result["error_message"] = error_data.get("error", {}).get("message", f"HTTP错误: {status_code}")
+                    except:
+                        result["error_code"] = f"HTTP_{status_code}"
+                        result["error_message"] = f"HTTP错误: {status_code}"
+            except Exception as e:
+                result["error_code"] = "NETWORK_ERROR"
+                result["error_message"] = f"网络错误: {str(e)}"
                 
         return result
     
     @staticmethod
     async def validate_keys_batch(api_keys: List[str], batch_size: int = 3) -> List[Dict]:
         """
-        Validate a batch of OpenAI API keys with concurrency control
+        Validate a batch of Claude API keys with concurrency control
         
         Args:
             api_keys: List of API keys to validate
@@ -205,7 +194,7 @@ class OpenAIKeyValidator:
                 
             # Process batch concurrently
             async with aiohttp.ClientSession(timeout=timeout, connector=connector) as session:
-                tasks = [OpenAIKeyValidator.validate_single_key(session, key) for key in batch]
+                tasks = [ClaudeKeyValidator.validate_single_key(session, key) for key in batch]
                 batch_results = await asyncio.gather(*tasks, return_exceptions=True)
                 
                 # 过滤掉可能的异常结果
@@ -305,4 +294,4 @@ class OpenAIKeyValidator:
             else:
                 writer.writerow({"key": result["key"]})
                 
-        return output.getvalue()
+        return output.getvalue() 
