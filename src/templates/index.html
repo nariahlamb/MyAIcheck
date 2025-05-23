@@ -109,6 +109,8 @@
             background-color: var(--card-bg);
             padding: 15px 0 5px;
             border-radius: var(--border-radius) var(--border-radius) 0 0;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
         }
         
         .api-type-btn {
@@ -894,9 +896,9 @@
             justify-content: center;
             width: 40px;
             height: 40px;
-            background-color: var(--bg-color); /* 使用背景色 */
+            background-color: transparent;
             border-radius: 50%;
-            box-shadow: var(--box-shadow);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             cursor: pointer;
             transition: var(--transition);
             border: 1px solid var(--border-color);
@@ -924,9 +926,9 @@
             justify-content: center;
             width: 40px;
             height: 40px;
-            background-color: var(--bg-color); /* 使用背景色 */
+            background-color: transparent;
             border-radius: 50%;
-            box-shadow: var(--box-shadow);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             cursor: pointer;
             transition: var(--transition);
             border: 1px solid var(--border-color);
@@ -1134,7 +1136,7 @@
         
         .dark-mode .node-toggle,
         .dark-mode .theme-toggle {
-            background-color: #3B4252;
+            background-color: transparent;
             border-color: #4C566A;
         }
         
@@ -2176,6 +2178,8 @@
         let autoDetectModels = true; // 是否自动检测模型
         let availableModels = {}; // 每种API类型的可用模型列表
         let modelDetectionInProgress = false; // 模型检测是否正在进行中
+        // ipdata API密钥 - 在Vercel环境变量中配置
+        let ipdataApiKey = ''; // Vercel环境变量中配置
         
         // API验证端点配置
         const API_ENDPOINTS = {
@@ -2684,23 +2688,138 @@
                 const ipData = await ipResponse.json();
                 const ip = ipData.ip;
                 
+                // 使用ipdata API获取IP详细信息
+                // 尝试从localStorage获取ipdata API密钥
+                let apiKey = localStorage.getItem('ipdata_api_key') || ipdataApiKey;
+                
+                // 如果没有API密钥，提示用户输入
+                if (!apiKey) {
+                    apiKey = prompt('请输入ipdata API密钥，只需输入一次，将保存在本地:');
+                    if (apiKey) {
+                        localStorage.setItem('ipdata_api_key', apiKey);
+                    } else {
+                        // 如果用户取消输入，回退到旧的获取方式
+                        return fetchNodeInfoFallback(ip);
+                    }
+                }
+                
+                // 使用ipdata API获取详细信息
+                const ipDataUrl = `https://api.ipdata.co/${ip}?api-key=${apiKey}`;
+                const ipDataResponse = await fetch(ipDataUrl);
+                
+                if (!ipDataResponse.ok) {
+                    // 如果API请求失败，可能是API密钥无效，清除本地存储的密钥并回退
+                    localStorage.removeItem('ipdata_api_key');
+                    return fetchNodeInfoFallback(ip);
+                }
+                
+                const ipDataInfo = await ipDataResponse.json();
+                
+                // 获取IP威胁信息
+                let ipTrustScore = 100;
+                let ipScoreColor = '#66BB6A';
+                
+                if (ipDataInfo.threat && typeof ipDataInfo.threat.is_threat === 'boolean') {
+                    // 根据威胁信息计算信任分数
+                    const threatScore = ipDataInfo.threat.is_threat ? 
+                        (ipDataInfo.threat.threat_score || 0) : 0;
+                    ipTrustScore = Math.max(0, 100 - threatScore);
+                    ipScoreColor = ipTrustScore < 30 ? '#EF5350' : (ipTrustScore < 60 ? '#FFA726' : '#66BB6A');
+                }
+                
+                // 获取浏览器信息
+                const browserInfo = {
+                    userAgent: navigator.userAgent,
+                    language: navigator.language,
+                    platform: navigator.platform,
+                    vendor: navigator.vendor || 'Unknown'
+                };
+                
+                // 构建信息HTML
+                let infoHTML = `
+                    <div class="node-info-item">
+                        <span class="node-info-label">IP:</span>
+                        <span class="node-info-value">${ip}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">地区:</span>
+                        <span class="node-info-value">${ipDataInfo.country_name || 'Unknown'} (${ipDataInfo.country_code || 'N/A'})</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">城市:</span>
+                        <span class="node-info-value">${ipDataInfo.city || 'Unknown'}, ${ipDataInfo.region || 'Unknown'}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">ISP:</span>
+                        <span class="node-info-value">${ipDataInfo.asn?.name || ipDataInfo.carrier?.name || 'Unknown'}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">时区:</span>
+                        <span class="node-info-value">${ipDataInfo.time_zone?.name || 'Unknown'}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">ASN:</span>
+                        <span class="node-info-value">${ipDataInfo.asn?.asn || 'Unknown'}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">IP类型:</span>
+                        <span class="node-info-value">${getIpType(ipDataInfo)}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">可信度分数:</span>
+                        <span class="node-info-value" style="color: ${ipScoreColor}; font-weight: bold;">
+                            ${ipTrustScore}/100 ${ipTrustScore < 30 ? '<span class="badge badge-warning">危险</span>' : ''}
+                        </span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">节点类型:</span>
+                        <span class="node-info-value">${getNodeType(ipDataInfo)}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">浏览器:</span>
+                        <span class="node-info-value">${getBrowserName(browserInfo.userAgent)}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">操作系统:</span>
+                        <span class="node-info-value">${getOSName(browserInfo.userAgent)}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">语言:</span>
+                        <span class="node-info-value">${browserInfo.language}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">更新时间:</span>
+                        <span class="node-info-value">${new Date().toLocaleString()}</span>
+                    </div>
+                `;
+                
+                nodeInfoContent.innerHTML = infoHTML;
+            } catch (error) {
+                console.error('获取节点信息失败:', error);
+                // 如果使用ipdata API失败，回退到原始方法
+                fetchNodeInfoFallback();
+            }
+        }
+        
+        // 回退方法：使用旧的API获取节点信息
+        async function fetchNodeInfoFallback(ip) {
+            const nodeInfoContent = document.getElementById('node-info-content');
+            
+            try {
+                // 如果没有传入IP，先获取IP
+                if (!ip) {
+                    const ipResponse = await fetch('https://api.ipify.org?format=json');
+                    const ipData = await ipResponse.json();
+                    ip = ipData.ip;
+                }
+                
                 // 获取详细IP数据
                 const geoResponse = await fetch(`https://ipapi.co/${ip}/json/`);
                 const geoData = await geoResponse.json();
                 
-                // 计算固定的IP数据可信度分数 (基于IP和ASN等特征)
-                // 使用IP和ASN等固定信息作为种子生成一个固定的分数，而不是每次都随机
+                // 计算IP数据可信度分数
                 const ipComponents = ip.split('.').map(Number);
                 let ipTrustScore = 70; // 基础分数
-                
-                // 基于IP特征调整分数
-                if (geoData.asn) {
-                    // 使用ASN作为固定信息源
-                    const asnNumber = parseInt(geoData.asn.replace(/\D/g, '')) || 0;
-                    // 使用ASN微调分数，但保持在0-100范围内
-                    const asnFactor = (asnNumber % 30) - 15; // -15到15之间
-                    ipTrustScore = Math.max(0, Math.min(100, ipTrustScore + asnFactor));
-                }
                 
                 // 基于地理位置调整分数
                 if (geoData.country_code) {
@@ -2718,61 +2837,18 @@
                     }
                 }
                 
-                // 基于ISP调整分数
-                if (geoData.org) {
-                    const org = geoData.org.toLowerCase();
-                    // 大型可信ISP
-                    if (org.includes('amazon') || org.includes('google') || org.includes('microsoft') || 
-                        org.includes('cloudflare') || org.includes('akamai')) {
-                        ipTrustScore += 10;
-                    }
-                    // 可疑ISP关键词
-                    if (org.includes('proxy') || org.includes('vpn') || org.includes('anon') || 
-                        org.includes('hosting') || org.includes('data center')) {
-                        ipTrustScore -= 10;
-                    }
-                }
-                
                 // 确保分数在0-100范围内
                 ipTrustScore = Math.max(0, Math.min(100, ipTrustScore));
                 
                 // 设置分数颜色
                 let ipScoreColor = ipTrustScore < 30 ? '#EF5350' : (ipTrustScore < 60 ? '#FFA726' : '#66BB6A');
                 
-                /* 不再使用ipdata API - 完全本地计算IP信任分数
-                try {
-                    // 注意：此处需要替换为您的ipdata API密钥
-                    const ipDataApiKey = 'YOUR_IPDATA_API_KEY'; // 如果需要使用真实ipdata API，请替换此处
-                    const ipDataResponse = await fetch(`https://api.ipdata.co/${ip}?api-key=${ipDataApiKey}`);
-                    if (ipDataResponse.ok) {
-                        const ipDataInfo = await ipDataResponse.json();
-                        if (ipDataInfo.threat && typeof ipDataInfo.threat.is_threat === 'boolean') {
-                            // 根据威胁分数计算信任分数 (0-100)
-                            const threatScore = ipDataInfo.threat.is_threat ? 
-                                (ipDataInfo.threat.threat_score || 0) : 0;
-                            ipTrustScore = Math.max(0, 100 - threatScore);
-                            ipScoreColor = ipTrustScore < 30 ? '#EF5350' : (ipTrustScore < 60 ? '#FFA726' : '#66BB6A');
-                        }
-                    }
-                } catch (ipDataError) {
-                    console.warn("无法获取ipdata威胁分数:", ipDataError);
-                }
-                */
-                
                 // 获取浏览器信息
                 const browserInfo = {
                     userAgent: navigator.userAgent,
                     language: navigator.language,
                     platform: navigator.platform,
-                    vendor: navigator.vendor || 'Unknown',
-                    cookiesEnabled: navigator.cookieEnabled,
-                    doNotTrack: navigator.doNotTrack || 'Unknown',
-                    connection: navigator.connection ? {
-                        effectiveType: navigator.connection.effectiveType,
-                        downlink: navigator.connection.downlink,
-                        rtt: navigator.connection.rtt,
-                        saveData: navigator.connection.saveData
-                    } : 'Unavailable'
+                    vendor: navigator.vendor || 'Unknown'
                 };
                 
                 // 构建信息HTML
@@ -2845,44 +2921,46 @@
             }
         }
         
-        // 获取节点类型
-        function getNodeType(geoData) {
-            if (!geoData) return 'Unknown';
+        // 获取IP类型 - 同时支持ipdata和ipapi格式
+        function getIpType(data) {
+            if (!data) return 'Unknown';
+            
+            const countryCode = data.country_code || data.country?.code;
+            const countryName = data.country_name || data.country?.name;
+            
+            if (countryCode === 'US') return 'United States IP';
+            if (countryCode === 'CN') return '中国 IP';
+            
+            return `${countryName || 'Unknown'} IP`;
+        }
+        
+        // 获取节点类型 - 同时支持ipdata和ipapi格式
+        function getNodeType(data) {
+            if (!data) return 'Unknown';
+            
+            const org = (data.org || data.asn?.name || data.carrier?.name || '').toLowerCase();
             
             // 检查是否为数据中心或云服务提供商
-            if (geoData.org && (
-                geoData.org.includes('Amazon') || 
-                geoData.org.includes('AWS') || 
-                geoData.org.includes('Microsoft') || 
-                geoData.org.includes('Azure') || 
-                geoData.org.includes('Google') || 
-                geoData.org.includes('Cloudflare') ||
-                geoData.org.includes('Digital Ocean') ||
-                geoData.org.includes('Linode')
-            )) {
+            if (org.includes('amazon') || 
+                org.includes('aws') || 
+                org.includes('microsoft') || 
+                org.includes('azure') || 
+                org.includes('google') || 
+                org.includes('cloudflare') ||
+                org.includes('digital ocean') ||
+                org.includes('linode')) {
                 return '数据中心节点 <span class="badge badge-info">高速</span>';
             }
             
             // 检查是否为移动网络
-            if (geoData.org && (
-                geoData.org.includes('Mobile') || 
-                geoData.org.includes('Wireless') || 
-                geoData.org.includes('Cellular')
-            )) {
+            if (org.includes('mobile') || 
+                org.includes('wireless') || 
+                org.includes('cellular') ||
+                (data.carrier && data.carrier.name)) {
                 return '移动网络节点';
             }
             
             return '普通网络节点';
-        }
-        
-        // 获取IP类型
-        function getIpType(geoData) {
-            if (!geoData) return 'Unknown';
-            
-            if (geoData.country_code === 'US') return 'United States IP';
-            if (geoData.country_code === 'CN') return '中国 IP';
-            
-            return `${geoData.country_name || 'Unknown'} IP`;
         }
         
         // 取消验证
@@ -2925,10 +3003,23 @@
                 const inputText = document.getElementById('keys-input').value.trim();
                 if (!inputText) return [];
                 
-                // 分行并过滤空行
-                return inputText.split('\n')
-                    .map(line => line.trim())
-                    .filter(line => line.length > 0);
+                // 分行并过滤空行，同时支持逗号分隔
+                const keys = [];
+                const lines = inputText.split('\n');
+                
+                lines.forEach(line => {
+                    if (line.trim()) {
+                        // 如果行中包含逗号，则按逗号分割
+                        if (line.includes(',')) {
+                            const commaKeys = line.split(',').map(k => k.trim()).filter(k => k.length > 0);
+                            keys.push(...commaKeys);
+                        } else {
+                            keys.push(line.trim());
+                        }
+                    }
+                });
+                
+                return keys;
             } else {
                 const fileInput = document.getElementById('file-input');
                 if (!fileInput.files || fileInput.files.length === 0) return [];
@@ -3889,34 +3980,51 @@
                     link.click();
                     URL.revokeObjectURL(url);
                 } else {
-                    // 客户端生成并导出CSV
-                    let csvContent = 'API密钥,状态,错误代码,错误信息\n';
-                    
-                    // 根据导出类型过滤结果
-                    const resultsToExport = exportType === 'valid' 
-                        ? validationResults.filter(r => r.valid)
-                        : validationResults;
-                    
-                    resultsToExport.forEach(result => {
-                        const status = result.valid ? '有效' : '无效';
-                        const errorCode = result.error_code || '';
-                        const errorMessage = result.error_message || '';
+                    // 客户端生成导出文件
+                    if (exportType === 'valid') {
+                        // 只导出有效密钥为纯文本格式，每行一个
+                        const validKeys = validationResults
+                            .filter(r => r.valid)
+                            .map(r => r.key);
                         
-                        // 正确处理CSV格式
-                        const escapedKey = `"${result.key.replace(/"/g, '""')}"`;
-                        const escapedMessage = `"${errorMessage.replace(/"/g, '""')}"`;
+                        if (validKeys.length === 0) {
+                            alert('没有有效的密钥可导出');
+                            return;
+                        }
                         
-                        csvContent += `${escapedKey},${status},${errorCode},${escapedMessage}\n`;
-                    });
-                    
-                    // 创建并下载文件
-                    const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `${currentApiType}_keys_validation_${exportType}_${getFormattedDate()}.csv`;
-                    link.click();
-                    URL.revokeObjectURL(url);
+                        const textContent = validKeys.join('\n');
+                        const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8;' });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `${currentApiType}_valid_keys_${getFormattedDate()}.txt`;
+                        link.click();
+                        URL.revokeObjectURL(url);
+                    } else {
+                        // 导出所有结果为CSV格式(保持原有功能)
+                        let csvContent = 'API密钥,状态,错误代码,错误信息\n';
+                        
+                        validationResults.forEach(result => {
+                            const status = result.valid ? '有效' : '无效';
+                            const errorCode = result.error_code || '';
+                            const errorMessage = result.error_message || '';
+                            
+                            // 正确处理CSV格式
+                            const escapedKey = `"${result.key.replace(/"/g, '""')}"`;
+                            const escapedMessage = `"${errorMessage.replace(/"/g, '""')}"`;
+                            
+                            csvContent += `${escapedKey},${status},${errorCode},${escapedMessage}\n`;
+                        });
+                        
+                        // 创建并下载文件
+                        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `${currentApiType}_all_results_${getFormattedDate()}.csv`;
+                        link.click();
+                        URL.revokeObjectURL(url);
+                    }
                 }
             } catch (error) {
                 alert(`导出失败: ${error.message}`);
@@ -4266,6 +4374,16 @@
         
         // 设置保存用户设置的事件监听器
         setupSettingsSaving();
+        
+        // 尝试从环境变量加载ipdata API密钥
+        // 这段代码会在部署到Vercel时从环境变量中获取密钥
+        try {
+            if (typeof process !== 'undefined' && process.env && process.env.IPDATA_API_KEY) {
+                ipdataApiKey = process.env.IPDATA_API_KEY;
+            }
+        } catch (e) {
+            console.log('未检测到Vercel环境变量');
+        }
     </script>
 </body>
 </html>
