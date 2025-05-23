@@ -241,9 +241,10 @@
         
         .toggle-container {
             display: flex;
+            justify-content: space-between; /* 两端对齐 */
             align-items: center;
-            margin-bottom: 15px; /* 减小下边距 */
-            background-color: #F0E3E9; /* 更柔和的背景色 */
+            margin-bottom: 15px;
+            background-color: #F0E3E9;
             padding: 10px 15px;
             border-radius: 8px;
         }
@@ -1326,7 +1327,7 @@
         
         .concurrency-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: space-between; /* 两端对齐 */
             align-items: center;
             margin-bottom: 10px;
         }
@@ -1586,22 +1587,6 @@
             margin-bottom: 0;
         }
         
-        .settings-info-btn {
-            padding: 5px 15px;
-            background-color: var(--primary-light);
-            color: white;
-            border: none;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .settings-info-btn:hover {
-            background-color: var(--primary-color);
-            transform: translateY(-2px);
-        }
-        
         .settings-help {
             display: flex;
             justify-content: space-between;
@@ -1612,9 +1597,9 @@
         /* 侧边栏样式 */
         .settings-sidebar {
             position: fixed;
-            left: -320px;
+            left: -360px;  /* 增加宽度，从320px改为360px */
             top: 0;
-            width: 320px;
+            width: 360px;  /* 增加宽度，从320px改为360px */
             height: 100%;
             background-color: var(--card-bg);
             border-right: 1px solid var(--border-color);
@@ -1623,6 +1608,8 @@
             transition: left 0.3s ease;
             overflow-y: auto;
             padding: 0;
+            border-top-right-radius: 12px;    /* 添加右边角圆角 */
+            border-bottom-right-radius: 12px; /* 添加右边角圆角 */
         }
         
         .settings-sidebar.open {
@@ -1634,7 +1621,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            padding-bottom: 10px;
+            padding: 15px 20px;  /* 增加内边距 */
             border-bottom: 1px solid var(--border-color);
         }
         
@@ -1648,15 +1635,60 @@
             background: none;
             border: none;
             color: var(--text-light);
-            font-size: 1.5rem;
+            font-size: 1.8rem;  /* 增大关闭按钮字体 */
             cursor: pointer;
             padding: 0;
+            width: 32px;        /* 设置固定宽度 */
+            height: 32px;       /* 设置固定高度 */
+            display: flex;      /* 使用flex布局 */
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%; /* 圆形按钮 */
         }
         
         .settings-close-btn:hover {
             color: var(--primary-color);
+            background-color: rgba(0, 0, 0, 0.05); /* 添加悬停背景色 */
         }
         
+        /* 侧边栏内容区域添加内边距 */
+        .settings-sidebar .settings-section {
+            padding: 0 20px; /* 添加左右内边距 */
+            margin-bottom: 24px;
+        }
+        
+        /* 侧边栏底部说明区域添加内边距 */
+        .settings-sidebar .settings-help,
+        .settings-sidebar .settings-info {
+            padding: 0 20px 20px; /* 添加左右内边距和底部内边距 */
+        }
+        
+        /* 开关和输入框靠右对齐 */
+        .toggle-container {
+            display: flex;
+            justify-content: space-between; /* 两端对齐 */
+            align-items: center;
+            margin-bottom: 15px;
+            background-color: #F0E3E9;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+        
+        .concurrency-header {
+            display: flex;
+            justify-content: space-between; /* 两端对齐 */
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .concurrency-controls {
+            display: flex;
+            justify-content: space-between; /* 两端对齐 */
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* 齿轮按钮 */
         .settings-gear-btn {
             position: fixed;
             top: 20px;
@@ -1700,6 +1732,17 @@
         
         .dark-mode .settings-close-btn:hover {
             color: #88C0D0;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        /* 暗色模式下的参数说明区域 */
+        .dark-mode .settings-info h4,
+        .dark-mode .settings-info h5 {
+            color: #88C0D0 !important;
+        }
+        
+        .dark-mode .settings-info div {
+            background-color: rgba(136, 192, 208, 0.1) !important;
         }
         
         /* 背景遮罩 */
@@ -1712,12 +1755,9 @@
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 999;
             display: none;
-            opacity: 0.9;
+            opacity: 0.6; /* 降低不透明度 */
             transition: opacity 0.3s ease;
-        }
-        
-        .settings-overlay.active {
-            display: block;
+            backdrop-filter: blur(2px); /* 添加模糊效果 */
         }
     </style>
 </head>
@@ -1803,10 +1843,34 @@
             </div>
         </div>
         
-        <!-- 设置说明 -->
+        <!-- 设置将自动保存提示 -->
         <div class="settings-help">
-            <button class="settings-info-btn" id="settings-info-btn">ⓘ 参数说明</button>
             <span class="help-text">设置将自动保存</span>
+        </div>
+        
+        <!-- 参数说明 -->
+        <div class="settings-info">
+            <h4 style="margin-top: 20px; margin-bottom: 15px; color: var(--primary-dark);">验证参数说明</h4>
+            
+            <div style="background-color: rgba(240, 98, 146, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <h5 style="margin-top: 0; margin-bottom: 8px; color: var(--primary-dark);">【批量大小】</h5>
+                <p style="margin: 0; font-size: 0.9rem;">是指一次性发送多少个密钥请求:</p>
+                <ul style="margin-top: 5px; padding-left: 20px; font-size: 0.9rem;">
+                    <li>小批量(1-10): 速度较慢但更稳定，适合网络不稳定情况</li>
+                    <li>中等值(10-25): 平衡的速度和稳定性，适合大多数情况</li>
+                    <li>大批量(25-50): 速度快但可能触发API限制</li>
+                </ul>
+            </div>
+            
+            <div style="background-color: rgba(240, 98, 146, 0.1); padding: 15px; border-radius: 8px;">
+                <h5 style="margin-top: 0; margin-bottom: 8px; color: var(--primary-dark);">【并发验证】</h5>
+                <p style="margin: 0; font-size: 0.9rem;">同时处理多个批次:</p>
+                <ul style="margin-top: 5px; padding-left: 20px; font-size: 0.9rem;">
+                    <li>启用后可大幅提高验证速度</li>
+                    <li>并发数建议3-5个，太多可能导致API限制</li>
+                    <li>网络不稳定时建议关闭并发</li>
+                </ul>
+            </div>
         </div>
     </div>
     
@@ -2343,10 +2407,12 @@
             // 初始化节点信息显示状态
             concurrencyControls.style.display = concurrencyEnabled ? 'flex' : 'none';
             
-            // 设置说明按钮
+            // 设置说明按钮 - 不再需要
+            /*
             document.getElementById('settings-info-btn').addEventListener('click', function() {
                 showBatchConcurrencyInfo();
             });
+            */
             
             // 加载用户之前的设置
             loadUserSettings();
@@ -2381,7 +2447,7 @@
             const settingsGearBtn = document.getElementById('settings-gear-btn');
             const settingsSidebar = document.getElementById('settings-sidebar');
             const settingsOverlay = document.getElementById('settings-overlay');
-            const settingsCloseBtn = document.getElementById('close-sidebar-btn');
+            const settingsCloseBtn = document.getElementById('settings-close-btn');
             
             // 加载侧边栏状态
             const sidebarOpen = localStorage.getItem('settingsSidebarOpen') === 'true';
@@ -2413,6 +2479,9 @@
                 localStorage.setItem('settingsSidebarOpen', 'false');
                 document.body.style.overflow = ''; // 恢复滚动
             });
+            
+            // 设置保存用户设置的事件监听器
+            setupSettingsSaving();
         });
         
         // 初始化空结果状态
@@ -3782,21 +3851,6 @@
             if (userAgent.indexOf("Android") > -1) return "Android";
             if (userAgent.indexOf("iOS") > -1 || userAgent.indexOf("iPhone") > -1 || userAgent.indexOf("iPad") > -1) return "iOS";
             return "Unknown";
-        }
-        
-        // 显示批次和并发的详细说明
-        function showBatchConcurrencyInfo() {
-            alert(`【验证参数说明】
-
-【批量大小】是指一次性发送多少个密钥请求:
-• 小批量(1-10): 速度较慢但更稳定，适合网络不稳定情况
-• 中等值(10-25): 平衡的速度和稳定性，适合大多数情况
-• 大批量(25-50): 速度快但可能触发API限制
-
-【并发验证】同时处理多个批次:
-• 启用后可大幅提高验证速度
-• 并发数建议3-5个，太多可能导致API限制
-• 网络不稳定时建议关闭并发`);
         }
         
         // 保存用户设置
