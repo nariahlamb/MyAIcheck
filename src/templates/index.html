@@ -1597,19 +1597,15 @@
         /* 侧边栏样式 */
         .settings-sidebar {
             position: fixed;
-            left: -360px;  /* 增加宽度，从320px改为360px */
-            top: 0;
-            width: 360px;  /* 增加宽度，从320px改为360px */
+            left: -400px;
+            width: 400px;
             height: 100%;
-            background-color: var(--card-bg);
-            border-right: 1px solid var(--border-color);
-            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            background-color: white;
             z-index: 1000;
             transition: left 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             overflow-y: auto;
-            padding: 0;
-            border-top-right-radius: 12px;    /* 添加右边角圆角 */
-            border-bottom-right-radius: 12px; /* 添加右边角圆角 */
+            padding: 20px 25px;
         }
         
         .settings-sidebar.open {
@@ -1745,6 +1741,52 @@
             background-color: rgba(136, 192, 208, 0.1) !important;
         }
         
+        /* 弹幕提示样式 */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: -300px; /* 初始位置在屏幕外 */
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.5s ease-out;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .toast-notification.show {
+            right: 20px;
+            opacity: 1;
+        }
+        
+        .toast-notification.hide {
+            opacity: 0;
+        }
+        
+        .toast-notification::before {
+            content: "✓";
+            margin-right: 8px;
+            font-weight: bold;
+            color: white;
+            background-color: rgba(255, 255, 255, 0.2);
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        
+        .dark-mode .toast-notification {
+            background-color: #5E81AC;
+        }
+        
         /* 背景遮罩 */
         .settings-overlay {
             position: fixed;
@@ -1844,9 +1886,17 @@
         </div>
         
         <!-- 设置将自动保存提示 -->
-        <div class="settings-help">
+        <div id="help-section" class="settings-section">
             <span class="help-text">设置将自动保存</span>
         </div>
+        
+        <!-- 设置将自动保存提示 -->
+        <div id="help-section" class="settings-section">
+            <button id="settings-info-btn" class="help-btn">参数说明</button>
+        </div>
+        
+        <!-- 弹幕通知元素 -->
+        <div id="toast-notification" class="toast-notification">设置已自动保存</div>
         
         <!-- 参数说明 -->
         <div class="settings-info">
@@ -2452,12 +2502,29 @@
             // 加载侧边栏状态
             const sidebarOpen = localStorage.getItem('settingsSidebarOpen') === 'true';
             if (sidebarOpen) {
-                settingsSidebar.classList.add('open');
+                settingsSidebar.style.left = '0';
                 settingsOverlay.style.display = 'block';
+                
+                // 根据屏幕高度调整侧边栏高度，避免出现滚动条
+                adjustSidebarHeight();
             }
             
             // 打开侧边栏
             settingsGearBtn.addEventListener('click', function() {
+                settingsSidebar.style.left = '0';
+                settingsOverlay.style.display = 'block';
+                localStorage.setItem('settingsSidebarOpen', 'true');
+                
+                // 根据屏幕高度调整侧边栏高度，避免出现滚动条
+                adjustSidebarHeight();
+            });
+            
+            // 关闭侧边栏 - 点击关闭按钮
+            settingsCloseBtn.addEventListener('click', closeSidebar);
+            
+            // 关闭侧边栏 - 点击遮罩层
+            settingsOverlay.addEventListener('click', closeSidebar);
+            
                 settingsSidebar.classList.add('open');
                 settingsOverlay.style.display = 'block';
                 localStorage.setItem('settingsSidebarOpen', 'true');
@@ -2465,20 +2532,10 @@
             });
             
             // 关闭侧边栏 - 通过关闭按钮
-            settingsCloseBtn.addEventListener('click', function() {
-                settingsSidebar.classList.remove('open');
-                settingsOverlay.style.display = 'none';
-                localStorage.setItem('settingsSidebarOpen', 'false');
-                document.body.style.overflow = ''; // 恢复滚动
-            });
+            settingsCloseBtn.addEventListener('click', closeSidebar);
             
             // 关闭侧边栏 - 通过点击遮罩层
-            settingsOverlay.addEventListener('click', function() {
-                settingsSidebar.classList.remove('open');
-                settingsOverlay.style.display = 'none';
-                localStorage.setItem('settingsSidebarOpen', 'false');
-                document.body.style.overflow = ''; // 恢复滚动
-            });
+            settingsOverlay.addEventListener('click', closeSidebar);
             
             // 设置保存用户设置的事件监听器
             setupSettingsSaving();
@@ -4105,6 +4162,55 @@
                 modelDetectionInProgress = false;
             }
         }
+        
+        // 侧边栏控制
+        const settingsSidebar = document.getElementById('settings-sidebar');
+        const settingsOverlay = document.getElementById('settings-overlay');
+        const settingsGearBtn = document.getElementById('settings-gear-btn');
+        const settingsCloseBtn = document.getElementById('settings-close-btn');
+        const toastNotification = document.getElementById('toast-notification');
+        
+        // 显示弹幕通知
+        function showToast(message) {
+            if (message) {
+                toastNotification.textContent = message;
+            }
+            toastNotification.classList.add('show');
+            
+            setTimeout(() => {
+                toastNotification.classList.add('hide');
+                setTimeout(() => {
+                    toastNotification.classList.remove('show');
+                    toastNotification.classList.remove('hide');
+                }, 500);
+            }, 3000);
+        }
+        
+        // 更新关闭侧边栏的代码，添加弹幕通知
+        function closeSidebar() {
+            settingsSidebar.style.left = '-400px';
+            settingsOverlay.style.display = 'none';
+            // 显示设置已保存的弹幕提示
+            showToast('设置已自动保存');
+        }
+        
+        // 打开侧边栏
+        settingsGearBtn.addEventListener('click', function() {
+            settingsSidebar.style.left = '0';
+            settingsOverlay.style.display = 'block';
+            
+            // 根据屏幕高度调整侧边栏高度，避免出现滚动条
+            adjustSidebarHeight();
+        });
+        
+        // 关闭侧边栏 - 点击关闭按钮
+        settingsCloseBtn.addEventListener('click', closeSidebar);
+        
+        // 关闭侧边栏 - 点击遮罩层
+        settingsOverlay.addEventListener('click', closeSidebar);
+        
+        // 设置保存用户设置的事件监听器
+        setupSettingsSaving();
     </script>
 </body>
 </html>
