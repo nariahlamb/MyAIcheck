@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/语言-Python%20%7C%20JavaScript-blue?style=for-the-badge" alt="语言"/>
   <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="许可证"/>
   
-  [![部署到Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FYOUR_USERNAME%2Fopenai_key_validator_src)
+  [![部署到Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fnariahlamb%2FMyAIcheck)
 </div>
 
 ## 🌟 项目介绍
@@ -56,7 +56,7 @@ MyAIcheck是一款优雅高效的多平台AI接口密钥验证工具，支持批
 
 只需点击下方按钮，轻松将MyAIcheck部署到Vercel：
 
-[![部署到Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FYOUR_USERNAME%2Fopenai_key_validator_src)
+[![部署到Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fnariahlamb%2FMyAIcheck)
 
 ## 📖 使用指南
 

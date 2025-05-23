@@ -598,6 +598,7 @@
             text-align: center;
             box-shadow: 0 3px 10px rgba(0,0,0,0.07);
             transition: var(--transition);
+            border: none; /* 移除边框 */
         }
         
         .summary-item:hover {
@@ -607,18 +608,18 @@
         
         .summary-total {
             background-color: #E3EEF6; /* 更柔和的蓝色 */
-            border: 1px solid #C5DFF0; /* 更柔和的边框 */
+            border: none; /* 移除边框 */
         }
         
         .summary-valid {
             background-color: #E4F1E5; /* 更柔和的绿色 */
-            border: 1px solid #C9E6CA; /* 更柔和的边框 */
+            border: none; /* 移除边框 */
             color: var(--success-color);
         }
         
         .summary-invalid {
             background-color: #F2E5E5; /* 更柔和的红色 */
-            border: 1px solid #EACBCB; /* 更柔和的边框 */
+            border: none; /* 移除边框 */
             color: var(--error-color);
         }
         
@@ -898,10 +899,10 @@
             height: 40px;
             background-color: transparent;
             border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: none;
             cursor: pointer;
             transition: var(--transition);
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .theme-toggle:hover {
@@ -928,10 +929,10 @@
             height: 40px;
             background-color: transparent;
             border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: none;
             cursor: pointer;
             transition: var(--transition);
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .node-toggle:hover {
@@ -1288,19 +1289,19 @@
         /* 夜间模式下的结果摘要样式 */
         .dark-mode .summary-total {
             background-color: #3B4252;
-            border-color: #4C566A;
+            border: none;
             color: #E5E9F0;
         }
         
         .dark-mode .summary-valid {
             background-color: #3B4252;
-            border-color: #4C566A;
+            border: none;
             color: #A3BE8C;
         }
         
         .dark-mode .summary-invalid {
             background-color: #3B4252;
-            border-color: #4C566A;
+            border: none;
             color: #BF616A;
         }
         
@@ -1810,6 +1811,133 @@
             transition: opacity 0.3s ease;
             backdrop-filter: blur(2px); /* 添加模糊效果 */
         }
+        
+        /* 通用API设置 - 减小间距，更紧凑布局 */
+        #openai_like-settings .input-group {
+            margin-bottom: 0.7rem; /* 减小下边距 */
+        }
+        
+        #openai_like-settings .model-select-container {
+            margin-top: 0.5rem; /* 减小上边距 */
+        }
+        
+        #openai_like-settings .custom-input,
+        #openai_like-settings .model-select {
+            padding: 8px; /* 减小内边距 */
+        }
+        
+        #custom-model-container .input-group {
+            margin-bottom: 0.5rem; /* 减小下边距 */
+        }
+        
+        /* 调整验证密钥和清除按钮位置 */
+        .actions-container {
+            margin-top: 0.7rem; /* 减小上边距 */
+        }
+        
+        /* 调整通用API界面的文本框高度 */
+        #openai_like-settings + .tabs + #text-input-container textarea {
+            min-height: 80px; /* 减小文本框高度 */
+        }
+        
+        /* 确保通用API类型下文本区域足够紧凑 */
+        .api-type-btn[data-api-type="openai_like"].active ~ .api-settings-container + .tabs + #text-input-container textarea {
+            min-height: 80px;
+        }
+        
+        /* 所有API类型下文本区域调整 */
+        #text-input-container textarea {
+            min-height: 80px; /* 全局减小文本框高度 */
+        }
+        
+        /* 所有输入区域调整 */
+        .input-group {
+            margin-bottom: 0.8rem;
+        }
+
+        /* 通用API类型下的模型容器 */
+        #openai_like-settings .model-select-container {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* 减小文件输入区域间距 */
+        #file-input-container {
+            margin-top: 0.5rem;
+        }
+        
+        /* 减小操作按钮上下间距 */
+        .btn {
+            padding: 8px 18px;
+        }
+        
+        /* 右上角按钮透明化 */
+        .dark-mode .node-toggle,
+        .dark-mode .theme-toggle {
+            background-color: transparent;
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+        }
+        
+        /* 右上角按钮透明化 */
+        .node-toggle,
+        .theme-toggle,
+        .settings-btn {
+            background-color: transparent !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            box-shadow: none !important;
+            opacity: 0.8;
+            transition: var(--transition);
+        }
+        
+        .node-toggle:hover,
+        .theme-toggle:hover,
+        .settings-btn:hover {
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+        
+        .dark-mode .node-toggle,
+        .dark-mode .theme-toggle,
+        .dark-mode .settings-btn {
+            background-color: transparent !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            box-shadow: none !important;
+        }
+        
+        /* 设置按钮样式 */
+        .settings-btn {
+            position: fixed;
+            top: 20px;
+            right: 120px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: transparent;
+            border-radius: 50%;
+            box-shadow: none;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 设置侧边栏样式优化 */
+        #settings-sidebar {
+            position: fixed;
+            top: 0;
+            left: -400px; /* 增加宽度 */
+            width: 400px; /* 增加宽度，更好地容纳内容 */
+            height: 100vh;
+            background-color: var(--card-bg);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transition: var(--transition);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+        }
     </style>
 </head>
 <body>
@@ -2179,7 +2307,7 @@
         let availableModels = {}; // 每种API类型的可用模型列表
         let modelDetectionInProgress = false; // 模型检测是否正在进行中
         // ipdata API密钥 - 在Vercel环境变量中配置
-        let ipdataApiKey = ''; // Vercel环境变量中配置
+        let ipdataApiKey = ''; // Vercel环境变量中配置，会在后端接口中注入
         
         // API验证端点配置
         const API_ENDPOINTS = {
@@ -2683,234 +2811,120 @@
             nodeInfoContent.innerHTML = '<div class="node-info-loading">正在获取节点信息...</div>';
             
             try {
-                // 获取IP信息
-                const ipResponse = await fetch('https://api.ipify.org?format=json');
-                const ipData = await ipResponse.json();
-                const ip = ipData.ip;
-                
-                // 使用ipdata API获取IP详细信息
-                // 尝试从localStorage获取ipdata API密钥
-                let apiKey = localStorage.getItem('ipdata_api_key') || ipdataApiKey;
-                
-                // 如果没有API密钥，提示用户输入
-                if (!apiKey) {
-                    apiKey = prompt('请输入ipdata API密钥，只需输入一次，将保存在本地:');
-                    if (apiKey) {
-                        localStorage.setItem('ipdata_api_key', apiKey);
-                    } else {
-                        // 如果用户取消输入，回退到旧的获取方式
-                        return fetchNodeInfoFallback(ip);
-                    }
-                }
-                
-                // 使用ipdata API获取详细信息
-                const ipDataUrl = `https://api.ipdata.co/${ip}?api-key=${apiKey}`;
-                const ipDataResponse = await fetch(ipDataUrl);
-                
-                if (!ipDataResponse.ok) {
-                    // 如果API请求失败，可能是API密钥无效，清除本地存储的密钥并回退
-                    localStorage.removeItem('ipdata_api_key');
-                    return fetchNodeInfoFallback(ip);
-                }
-                
-                const ipDataInfo = await ipDataResponse.json();
-                
-                // 获取IP威胁信息
-                let ipTrustScore = 100;
-                let ipScoreColor = '#66BB6A';
-                
-                if (ipDataInfo.threat && typeof ipDataInfo.threat.is_threat === 'boolean') {
-                    // 根据威胁信息计算信任分数
-                    const threatScore = ipDataInfo.threat.is_threat ? 
-                        (ipDataInfo.threat.threat_score || 0) : 0;
-                    ipTrustScore = Math.max(0, 100 - threatScore);
-                    ipScoreColor = ipTrustScore < 30 ? '#EF5350' : (ipTrustScore < 60 ? '#FFA726' : '#66BB6A');
-                }
-                
-                // 获取浏览器信息
-                const browserInfo = {
-                    userAgent: navigator.userAgent,
-                    language: navigator.language,
-                    platform: navigator.platform,
-                    vendor: navigator.vendor || 'Unknown'
-                };
-                
-                // 构建信息HTML
-                let infoHTML = `
-                    <div class="node-info-item">
-                        <span class="node-info-label">IP:</span>
-                        <span class="node-info-value">${ip}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">地区:</span>
-                        <span class="node-info-value">${ipDataInfo.country_name || 'Unknown'} (${ipDataInfo.country_code || 'N/A'})</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">城市:</span>
-                        <span class="node-info-value">${ipDataInfo.city || 'Unknown'}, ${ipDataInfo.region || 'Unknown'}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">ISP:</span>
-                        <span class="node-info-value">${ipDataInfo.asn?.name || ipDataInfo.carrier?.name || 'Unknown'}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">时区:</span>
-                        <span class="node-info-value">${ipDataInfo.time_zone?.name || 'Unknown'}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">ASN:</span>
-                        <span class="node-info-value">${ipDataInfo.asn?.asn || 'Unknown'}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">IP类型:</span>
-                        <span class="node-info-value">${getIpType(ipDataInfo)}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">可信度分数:</span>
-                        <span class="node-info-value" style="color: ${ipScoreColor}; font-weight: bold;">
-                            ${ipTrustScore}/100 ${ipTrustScore < 30 ? '<span class="badge badge-warning">危险</span>' : ''}
-                        </span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">节点类型:</span>
-                        <span class="node-info-value">${getNodeType(ipDataInfo)}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">浏览器:</span>
-                        <span class="node-info-value">${getBrowserName(browserInfo.userAgent)}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">操作系统:</span>
-                        <span class="node-info-value">${getOSName(browserInfo.userAgent)}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">语言:</span>
-                        <span class="node-info-value">${browserInfo.language}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">更新时间:</span>
-                        <span class="node-info-value">${new Date().toLocaleString()}</span>
-                    </div>
-                `;
-                
-                nodeInfoContent.innerHTML = infoHTML;
+                // 先获取IP地址
+                fetch('https://api.ipify.org?format=json')
+                    .then(response => response.json())
+                    .then(data => {
+                        const ip = data.ip;
+                        document.getElementById('node-ip').textContent = ip;
+                        
+                        // 使用ipdata API获取更多信息
+                        // 优先使用Vercel环境变量中的API密钥，如果未配置则从localStorage获取
+                        let apiKey = localStorage.getItem('ipdata_api_key') || ipdataApiKey;
+                        
+                        // 如果没有API密钥，提示用户输入
+                        if (!apiKey) {
+                            // 将提示修改为建议用户配置Vercel环境变量
+                            showToast('要获取地理位置信息，请在Vercel中配置IPDATA_API_KEY环境变量', 'info', 5000);
+                            document.getElementById('node-region').textContent = '未知 (需要配置ipdata API密钥)';
+                            document.getElementById('node-country').textContent = '未知';
+                            document.getElementById('node-isp').textContent = '未知';
+                            return;
+                        }
+                        
+                        // 使用API密钥获取地理位置信息
+                        const ipDataUrl = `https://api.ipdata.co/${ip}?api-key=${apiKey}`;
+                        
+                        fetch(ipDataUrl)
+                            .then(response => response.json())
+                            .then(data => {
+                                const countryName = data.country_name || 'Unknown';
+                                const region = data.region || 'Unknown';
+                                const city = data.city || 'Unknown';
+                                const postalCode = data.postal || 'N/A';
+                                const timezone = data.timezone || 'Unknown';
+                                const isp = data.asn?.name || data.carrier?.name || 'Unknown';
+                                
+                                nodeInfoContent.innerHTML = `
+                                    <div class="node-info-item">
+                                        <span class="node-info-label">IP:</span>
+                                        <span class="node-info-value">${ip}</span>
+                                    </div>
+                                    <div class="node-info-item">
+                                        <span class="node-info-label">地区:</span>
+                                        <span class="node-info-value">${countryName} (${postalCode})</span>
+                                    </div>
+                                    <div class="node-info-item">
+                                        <span class="node-info-label">城市:</span>
+                                        <span class="node-info-value">${city}</span>
+                                    </div>
+                                    <div class="node-info-item">
+                                        <span class="node-info-label">ISP:</span>
+                                        <span class="node-info-value">${isp}</span>
+                                    </div>
+                                    <div class="node-info-item">
+                                        <span class="node-info-label">时区:</span>
+                                        <span class="node-info-value">${timezone}</span>
+                                    </div>
+                                    <div class="node-info-item">
+                                        <span class="node-info-label">ASN:</span>
+                                        <span class="node-info-value">${data.asn?.asn || 'Unknown'}</span>
+                                    </div>
+                                    <div class="node-info-item">
+                                        <span class="node-info-label">IP类型:</span>
+                                        <span class="node-info-value">${getIpType(data)}</span>
+                                    </div>
+                                    <div class="node-info-item">
+                                        <span class="node-info-label">可信度分数:</span>
+                                        <span class="node-info-value" style="color: #66BB6A; font-weight: bold;">
+                                            100 ${ipTrustScore < 30 ? '<span class="badge badge-warning">危险</span>' : ''}
+                                        </span>
+                                    </div>
+                                    <div class="node-info-item">
+                                        <span class="node-info-label">节点类型:</span>
+                                        <span class="node-info-value">${getNodeType(data)}</span>
+                                    </div>
+                                    <div class="node-info-item">
+                                        <span class="node-info-label">浏览器:</span>
+                                        <span class="node-info-value">${getBrowserName(navigator.userAgent)}</span>
+                                    </div>
+                                    <div class="node-info-item">
+                                        <span class="node-info-label">操作系统:</span>
+                                        <span class="node-info-value">${getOSName(navigator.userAgent)}</span>
+                                    </div>
+                                    <div class="node-info-item">
+                                        <span class="node-info-label">语言:</span>
+                                        <span class="node-info-value">${navigator.language}</span>
+                                    </div>
+                                    <div class="node-info-item">
+                                        <span class="node-info-label">更新时间:</span>
+                                        <span class="node-info-value">${new Date().toLocaleString()}</span>
+                                    </div>
+                                `;
+                            })
+                            .catch(error => {
+                                console.error('获取节点信息失败:', error);
+                                nodeInfoContent.innerHTML = `
+                                    <div class="node-info-item">
+                                        <span class="node-info-label">错误:</span>
+                                        <span class="node-info-value">获取节点信息失败: ${error.message}</span>
+                                    </div>
+                                    <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="fetchNodeInfo()">重试</button>
+                                `;
+                            });
+                    })
+                    .catch(error => {
+                        console.error('获取IP地址失败:', error);
+                        nodeInfoContent.innerHTML = `
+                            <div class="node-info-item">
+                                <span class="node-info-label">错误:</span>
+                                <span class="node-info-value">获取IP地址失败: ${error.message}</span>
+                            </div>
+                            <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="fetchNodeInfo()">重试</button>
+                        `;
+                    });
             } catch (error) {
                 console.error('获取节点信息失败:', error);
-                // 如果使用ipdata API失败，回退到原始方法
-                fetchNodeInfoFallback();
-            }
-        }
-        
-        // 回退方法：使用旧的API获取节点信息
-        async function fetchNodeInfoFallback(ip) {
-            const nodeInfoContent = document.getElementById('node-info-content');
-            
-            try {
-                // 如果没有传入IP，先获取IP
-                if (!ip) {
-                    const ipResponse = await fetch('https://api.ipify.org?format=json');
-                    const ipData = await ipResponse.json();
-                    ip = ipData.ip;
-                }
-                
-                // 获取详细IP数据
-                const geoResponse = await fetch(`https://ipapi.co/${ip}/json/`);
-                const geoData = await geoResponse.json();
-                
-                // 计算IP数据可信度分数
-                const ipComponents = ip.split('.').map(Number);
-                let ipTrustScore = 70; // 基础分数
-                
-                // 基于地理位置调整分数
-                if (geoData.country_code) {
-                    // 高可信区域
-                    if (['US', 'CA', 'GB', 'AU', 'NZ', 'DE', 'FR', 'JP', 'KR', 'SG'].includes(geoData.country_code)) {
-                        ipTrustScore += 15;
-                    }
-                    // 中等可信区域
-                    else if (['BR', 'IN', 'ZA', 'MX', 'AR'].includes(geoData.country_code)) {
-                        ipTrustScore += 0;
-                    }
-                    // 低可信区域
-                    else if (['CN', 'RU', 'IR', 'KP', 'SY', 'CU'].includes(geoData.country_code)) {
-                        ipTrustScore -= 15;
-                    }
-                }
-                
-                // 确保分数在0-100范围内
-                ipTrustScore = Math.max(0, Math.min(100, ipTrustScore));
-                
-                // 设置分数颜色
-                let ipScoreColor = ipTrustScore < 30 ? '#EF5350' : (ipTrustScore < 60 ? '#FFA726' : '#66BB6A');
-                
-                // 获取浏览器信息
-                const browserInfo = {
-                    userAgent: navigator.userAgent,
-                    language: navigator.language,
-                    platform: navigator.platform,
-                    vendor: navigator.vendor || 'Unknown'
-                };
-                
-                // 构建信息HTML
-                let infoHTML = `
-                    <div class="node-info-item">
-                        <span class="node-info-label">IP:</span>
-                        <span class="node-info-value">${ip}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">地区:</span>
-                        <span class="node-info-value">${geoData.country_name || 'Unknown'} (${geoData.country_code || 'N/A'})</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">城市:</span>
-                        <span class="node-info-value">${geoData.city || 'Unknown'}, ${geoData.region || 'Unknown'}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">ISP:</span>
-                        <span class="node-info-value">${geoData.org || 'Unknown'}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">时区:</span>
-                        <span class="node-info-value">${geoData.timezone || 'Unknown'}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">ASN:</span>
-                        <span class="node-info-value">${geoData.asn || 'Unknown'}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">IP类型:</span>
-                        <span class="node-info-value">${getIpType(geoData)}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">可信度分数:</span>
-                        <span class="node-info-value" style="color: ${ipScoreColor}; font-weight: bold;">
-                            ${ipTrustScore}/100 ${ipTrustScore < 30 ? '<span class="badge badge-warning">危险</span>' : ''}
-                        </span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">节点类型:</span>
-                        <span class="node-info-value">${getNodeType(geoData)}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">浏览器:</span>
-                        <span class="node-info-value">${getBrowserName(browserInfo.userAgent)}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">操作系统:</span>
-                        <span class="node-info-value">${getOSName(browserInfo.userAgent)}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">语言:</span>
-                        <span class="node-info-value">${browserInfo.language}</span>
-                    </div>
-                    <div class="node-info-item">
-                        <span class="node-info-label">更新时间:</span>
-                        <span class="node-info-value">${new Date().toLocaleString()}</span>
-                    </div>
-                `;
-                
-                nodeInfoContent.innerHTML = infoHTML;
-            } catch (error) {
                 nodeInfoContent.innerHTML = `
                     <div class="node-info-item">
                         <span class="node-info-label">错误:</span>
@@ -4320,11 +4334,32 @@
         // 根据屏幕高度调整侧边栏高度
         function adjustSidebarHeight() {
             const settingsSidebar = document.getElementById('settings-sidebar');
-            if (settingsSidebar) {
-                const viewportHeight = window.innerHeight;
-                settingsSidebar.style.maxHeight = `${viewportHeight}px`;
-                settingsSidebar.style.height = `${viewportHeight}px`;
+            const viewportHeight = window.innerHeight;
+            // 设置最大高度为视口高度减去20px的边距
+            settingsSidebar.style.maxHeight = (viewportHeight - 20) + 'px';
+            settingsSidebar.style.overflowY = 'auto';
+        }
+        
+        // 监听窗口大小变化事件，动态调整侧边栏高度
+        window.addEventListener('resize', function() {
+            const settingsSidebar = document.getElementById('settings-sidebar');
+            // 只有当侧边栏打开时才调整高度
+            if (settingsSidebar.style.left === '0px') {
+                adjustSidebarHeight();
             }
+        });
+        
+        // 关闭侧边栏函数
+        function closeSidebar() {
+            const settingsSidebar = document.getElementById('settings-sidebar');
+            const settingsOverlay = document.getElementById('settings-overlay');
+            
+            settingsSidebar.style.left = '-400px'; // 增加宽度，确保完全隐藏
+            settingsOverlay.style.display = 'none';
+            localStorage.setItem('settingsSidebarOpen', 'false');
+            
+            // 显示设置已保存提示
+            showToast('设置已自动保存', 'success');
         }
         
         // 侧边栏控制
@@ -4361,6 +4396,7 @@
         settingsGearBtn.addEventListener('click', function() {
             settingsSidebar.style.left = '0';
             settingsOverlay.style.display = 'block';
+            localStorage.setItem('settingsSidebarOpen', 'true');
             
             // 根据屏幕高度调整侧边栏高度，避免出现滚动条
             adjustSidebarHeight();
