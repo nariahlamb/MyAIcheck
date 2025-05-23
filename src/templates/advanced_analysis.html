@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级API密钥分析 - MyAIcheck</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/advanced.css">
+    <!-- 添加Chart.js用于数据可视化 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+</head>
+<body data-bs-theme="auto">
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-shield-check me-2"></i>MyAIcheck
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/advanced">高级分析</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/health">服务健康</a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-sm btn-outline-light" id="themeToggle">
+                            <i class="bi bi-moon-stars"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <div class="container my-4">
+        <h1 class="text-center mb-4">
+            <i class="bi bi-graph-up-arrow"></i> 高级API密钥分析
+        </h1>
+        
+        <!-- 功能描述 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">功能介绍</h5>
+                <p class="card-text">
+                    高级分析模式提供比基础验证更深入的API密钥检测，包括:
+                </p>
+                <ul>
+                    <li>支持的模型列表和配额检测</li>
+                    <li>速率限制和使用配额检测</li>
+                    <li>API密钥评分和健康评估</li>
+                    <li>性能基准测试(延迟、成功率)</li>
+                    <li>账户和组织信息(如可用)</li>
+                </ul>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 高级分析会执行多个API调用对密钥进行深度分析，请谨慎使用以避免不必要的API调用。
+                </div>
+            </div>
+        </div>
+        
+        <!-- 输入区域 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-key"></i> API密钥分析
+            </div>
+            <div class="card-body">
+                <form id="analyzeForm">
+                    <div class="mb-3">
+                        <label for="apiKey" class="form-label">API密钥 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="apiKey" placeholder="输入要分析的API密钥" required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            安全提示: 所有分析过程在本地完成，不会向第三方泄露您的API密钥
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">分析选项</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="checkModels" checked>
+                            <label class="form-check-label" for="checkModels">
+                                检测支持的模型
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="checkQuota" checked>
+                            <label class="form-check-label" for="checkQuota">
+                                检测使用配额
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="checkPerformance">
+                            <label class="form-check-label" for="checkPerformance">
+                                测试延迟和性能(将发送多个请求)
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary" id="analyzeBtn">
+                            <i class="bi bi-search"></i> 开始分析
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 分析结果 -->
+        <div class="card mb-4 d-none" id="resultsCard">
+            <div class="card-header">
+                <i class="bi bi-clipboard-data"></i> 分析结果
+            </div>
+            <div class="card-body">
+                <!-- 基本信息 -->
+                <div class="mb-4">
+                    <h5>基本信息</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th style="width: 30%">API类型</th>
+                                    <td id="result-api-type">-</td>
+                                </tr>
+                                <tr>
+                                    <th>API密钥状态</th>
+                                    <td id="result-status">-</td>
+                                </tr>
+                                <tr>
+                                    <th>支持的能力</th>
+                                    <td id="result-capabilities">-</td>
+                                </tr>
+                                <tr>
+                                    <th>配额信息</th>
+                                    <td id="result-quota">-</td>
+                                </tr>
+                                <tr>
+                                    <th>到期时间</th>
+                                    <td id="result-expiry">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- 支持的模型 -->
+                <div class="mb-4">
+                    <h5>支持的模型</h5>
+                    <div id="result-models-list" class="mb-3">
+                        <div class="alert alert-secondary">未获取模型信息</div>
+                    </div>
+                </div>
+                
+                <!-- 性能分析 -->
+                <div class="mb-4 d-none" id="performanceSection">
+                    <h5>性能分析</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">延迟分析</h6>
+                                    <canvas id="latencyChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">成功率</h6>
+                                    <div id="result-success-rate" class="text-center">
+                                        <div class="display-4">-</div>
+                                        <div>请求成功率</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 错误信息 -->
+                <div class="alert alert-danger d-none" id="errorAlert">
+                    <i class="bi bi-exclamation-triangle"></i> <span id="errorMessage"></span>
+                </div>
+                
+                <!-- 导出按钮 -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button class="btn btn-outline-secondary" id="copyResultsBtn">
+                        <i class="bi bi-clipboard"></i> 复制结果
+                    </button>
+                    <button class="btn btn-success" id="exportJsonBtn">
+                        <i class="bi bi-download"></i> 导出JSON
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 页脚 -->
+    <footer class="footer py-3 bg-light mt-auto">
+        <div class="container text-center">
+            <span class="text-muted">© 2023-2024 MyAIcheck. 保持探索，保持验证</span>
+        </div>
+    </footer>
+    
+    <!-- 加载脚本 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/theme.js"></script>
+    <script src="/static/js/advanced-analysis.js"></script>
+</body>
+</html>

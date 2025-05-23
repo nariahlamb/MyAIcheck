@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API服务健康监控 - MyAIcheck</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/health.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+</head>
+<body data-bs-theme="auto">
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-shield-check me-2"></i>MyAIcheck
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/advanced">高级分析</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/health">服务健康</a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-sm btn-outline-light" id="themeToggle">
+                            <i class="bi bi-moon-stars"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <div class="container my-4">
+        <h1 class="text-center mb-4">
+            <i class="bi bi-activity"></i> API服务健康监控
+        </h1>
+        
+        <!-- 刷新按钮 -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span id="lastUpdated" class="text-muted small">最后更新: -</span>
+            <button id="refreshBtn" class="btn btn-primary btn-sm">
+                <i class="bi bi-arrow-clockwise"></i> 刷新状态
+            </button>
+        </div>
+        
+        <!-- 总览卡片 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">总体状态</h5>
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center">
+                        <div id="overallStatusIndicator" class="status-circle bg-success mb-2">
+                            <i class="bi bi-check-lg"></i>
+                        </div>
+                        <h4 id="overallStatusText">全部正常</h4>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="row">
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="card h-100 text-center">
+                                    <div class="card-body py-2">
+                                        <h6>OpenAI</h6>
+                                        <div id="statusOpenAI" class="status-badge badge bg-success">正常</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="card h-100 text-center">
+                                    <div class="card-body py-2">
+                                        <h6>Claude</h6>
+                                        <div id="statusClaude" class="status-badge badge bg-success">正常</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="card h-100 text-center">
+                                    <div class="card-body py-2">
+                                        <h6>Gemini</h6>
+                                        <div id="statusGemini" class="status-badge badge bg-success">正常</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="card h-100 text-center">
+                                    <div class="card-body py-2">
+                                        <h6>Cohere</h6>
+                                        <div id="statusCohere" class="status-badge badge bg-success">正常</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 详细状态 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-speedometer2"></i> 详细健康状态
+            </div>
+            <div class="card-body">
+                <!-- 切换标签 -->
+                <ul class="nav nav-tabs" id="statusTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="response-tab" data-bs-toggle="tab" data-bs-target="#response" 
+                                type="button" role="tab">响应时间</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="success-tab" data-bs-toggle="tab" data-bs-target="#success" 
+                                type="button" role="tab">成功率</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="regional-tab" data-bs-toggle="tab" data-bs-target="#regional" 
+                                type="button" role="tab">区域分析</button>
+                    </li>
+                </ul>
+                
+                <!-- 标签内容 -->
+                <div class="tab-content p-3" id="statusTabContent">
+                    <!-- 响应时间 -->
+                    <div class="tab-pane fade show active" id="response" role="tabpanel">
+                        <div class="mb-3">
+                            <canvas id="latencyChart" height="250"></canvas>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>服务提供商</th>
+                                        <th>平均延迟</th>
+                                        <th>最小延迟</th>
+                                        <th>最大延迟</th>
+                                        <th>状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="latencyTableBody">
+                                    <!-- 将由JS填充 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- 成功率 -->
+                    <div class="tab-pane fade" id="success" role="tabpanel">
+                        <div class="mb-3">
+                            <canvas id="successRateChart" height="250"></canvas>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>服务提供商</th>
+                                        <th>成功率</th>
+                                        <th>成功/总请求</th>
+                                        <th>状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="successRateTableBody">
+                                    <!-- 将由JS填充 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- 区域分析 -->
+                    <div class="tab-pane fade" id="regional" role="tabpanel">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 
+                            区域分析显示不同区域的API访问质量。这有助于您根据自己的位置选择最佳服务提供商。
+                        </div>
+                        
+                        <div class="row row-cols-1 row-cols-md-2 g-4" id="regionalCards">
+                            <!-- 将由JS填充 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 历史趋势 -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-clock-history"></i> 健康趋势 (24小时)
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <canvas id="trendChart" height="250"></canvas>
+                </div>
+                <div class="text-muted small text-center">
+                    健康趋势跟踪过去24小时的状态变化，帮助您了解服务的稳定性
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 页脚 -->
+    <footer class="footer py-3 bg-light mt-auto">
+        <div class="container text-center">
+            <span class="text-muted">© 2023-2024 MyAIcheck. 保持探索，保持验证</span>
+        </div>
+    </footer>
+    
+    <!-- 加载脚本 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/theme.js"></script>
+    <script src="/static/js/health-monitor.js"></script>
+</body>
+</html>

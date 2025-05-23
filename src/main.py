@@ -8,8 +8,10 @@ from flask import Flask, render_template, send_from_directory # type: ignore
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-# 导入API密钥蓝图
+# 导入蓝图
 from src.routes.api_key import api_key_bp
+from src.routes.feedback import feedback_bp
+from src.routes.advanced import advanced_bp
 
 # Create Flask app with correct static folder
 app = Flask(__name__, 
@@ -19,14 +21,24 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload size
 
 # Register blueprints
 app.register_blueprint(api_key_bp)
+app.register_blueprint(feedback_bp)
+app.register_blueprint(advanced_bp)
 
 # 使用threading作为默认异步模式
 async_mode = 'threading'
 
-# Main route
+# 页面路由
 @app.route('/')
 def index():
     return render_template('index.html')
+    
+@app.route('/advanced')
+def advanced_analysis():
+    return render_template('advanced_analysis.html')
+    
+@app.route('/health')
+def health_monitor():
+    return render_template('health_monitor.html')
 
 # 添加新路由来提供修复脚本
 @app.route('/static/<path:filename>')

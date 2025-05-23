@@ -1,0 +1,109 @@
+/* 高级分析页面样式 */
+
+/* 卡片悬停效果 */
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* 密钥输入样式 */
+#apiKey {
+    font-family: monospace;
+    letter-spacing: 1px;
+}
+
+/* 模型标签样式 */
+#result-models-list .badge {
+    margin: 0.2rem;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.6rem;
+}
+
+/* 悬停提示 */
+[data-bs-toggle="tooltip"] {
+    cursor: help;
+}
+
+/* 状态指示器 */
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-indicator.valid {
+    background-color: #198754;
+}
+
+.status-indicator.invalid {
+    background-color: #dc3545;
+}
+
+/* 使复制按钮和导出按钮分散对齐 */
+@media (max-width: 767.98px) {
+    .btn-group-responsive {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* 响应式调整 */
+@media (max-width: 575.98px) {
+    .card-title {
+        font-size: 1.25rem;
+    }
+    
+    h5 {
+        font-size: 1.15rem;
+    }
+}
+
+/* 暗色模式适配 */
+[data-bs-theme="dark"] .card {
+    border-color: #444;
+}
+
+[data-bs-theme="dark"] .table {
+    color: #eee;
+}
+
+[data-bs-theme="dark"] .text-muted {
+    color: #adb5bd !important;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-track {
+    background: #333;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #666;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
