@@ -2354,8 +2354,8 @@
                 }
             },
             xai: {
-                models: 'https://api.xai.com/v1/models',
-                completions: 'https://api.xai.com/v1/chat/completions',
+                models: 'https://api.x.ai/v1/models',
+                completions: 'https://api.x.ai/v1/chat/completions',
                 payload: function(model) {
                     return {
                         model: model || 'grok-1',
@@ -4184,7 +4184,7 @@
                         headers = { 'Authorization': `Bearer ${key}` };
                         break;
                     case 'xai':
-                        url = 'https://api.xai.com/v1/models';
+                        url = 'https://api.x.ai/v1/models';
                         headers = { 'Authorization': `Bearer ${key}` };
                         break;
                     case 'openai_like':
