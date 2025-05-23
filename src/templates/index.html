@@ -159,6 +159,21 @@
             animation: fadeIn 0.5s ease;
         }
         
+        /* API设置容器样式 */
+        .api-settings-container {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .dark-mode .api-settings-container {
+            background-color: #3B4252;
+            border-color: #4C566A;
+        }
+        
         .custom-settings {
             display: none;
             background-color: #EEE5F0; /* 更柔和的背景色 */
@@ -1544,8 +1559,23 @@
         
         .settings-content.expanded {
             padding: 15px;
-            max-height: 300px;  /* 限制最大高度 */
+            max-height: 400px;  /* 增加最大高度 */
             overflow-y: auto;   /* 添加垂直滚动条 */
+            scrollbar-width: thin;  /* Firefox滚动条样式 */
+            scrollbar-color: var(--primary-light) transparent;  /* Firefox滚动条颜色 */
+        }
+        
+        .settings-content.expanded::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .settings-content.expanded::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .settings-content.expanded::-webkit-scrollbar-thumb {
+            background-color: var(--primary-light);
+            border-radius: 4px;
         }
         
         .settings-section {
@@ -1620,6 +1650,92 @@
                         <button class="api-type-btn" data-api-type="deepseek">Deepseek</button>
                         <button class="api-type-btn" data-api-type="xai">XAI (Grok)</button>
                         <button class="api-type-btn" data-api-type="openai_like">通用API</button>
+                    </div>
+                    
+                    <!-- API配置设置 - 从设置菜单移到外部 -->
+                    <div class="api-settings-container">
+                        <!-- OpenAI设置 -->
+                        <div id="openai-settings" class="api-settings">
+                            <div class="model-select-container">
+                                <label for="openai-model">选择模型:</label>
+                                <select id="openai-model" class="model-select">
+                                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                                    <option value="gpt-4">GPT-4</option>
+                                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                                    <option value="gpt-4o">GPT-4o</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Claude设置 -->
+                        <div id="claude-settings" class="api-settings" style="display: none;">
+                            <div class="model-select-container">
+                                <label for="claude-model">选择模型:</label>
+                                <select id="claude-model" class="model-select">
+                                    <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                                    <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+                                    <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+                                    <option value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Gemini设置 -->
+                        <div id="gemini-settings" class="api-settings" style="display: none;">
+                            <div class="model-select-container">
+                                <label for="gemini-model">选择模型:</label>
+                                <select id="gemini-model" class="model-select">
+                                    <option value="gemini-pro">Gemini Pro</option>
+                                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Deepseek设置 -->
+                        <div id="deepseek-settings" class="api-settings" style="display: none;">
+                            <div class="model-select-container">
+                                <label for="deepseek-model">选择模型:</label>
+                                <select id="deepseek-model" class="model-select">
+                                    <option value="deepseek-chat">Deepseek Chat</option>
+                                    <option value="deepseek-coder">Deepseek Coder</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- XAI (Grok)设置 -->
+                        <div id="xai-settings" class="api-settings" style="display: none;">
+                            <div class="model-select-container">
+                                <label for="xai-model">选择模型:</label>
+                                <select id="xai-model" class="model-select">
+                                    <option value="grok-1">Grok-1</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- 通用API设置 -->
+                        <div id="openai_like-settings" class="api-settings" style="display: none;">
+                            <div class="input-group">
+                                <label for="custom-api-url">API端点 (必须以/v1结尾):</label>
+                                <input type="text" id="custom-api-url" class="custom-input" placeholder="例如: https://api.example.com/v1">
+                            </div>
+                            
+                            <div class="model-select-container">
+                                <label for="openai_like-model">模型名称:</label>
+                                <select id="openai_like-model" class="model-select">
+                                    <option value="loading" disabled style="display: none;">正在获取可用模型...</option>
+                                    <option value="failed" disabled style="display: none;">无法获取模型列表</option>
+                                    <option value="custom">自定义模型名称</option>
+                                </select>
+                            </div>
+                            
+                            <div id="custom-model-container" style="display: none;">
+                                <div class="input-group">
+                                    <label for="custom-model-name">自定义模型名称:</label>
+                                    <input type="text" id="custom-model-name" class="custom-input" placeholder="例如: gpt-3.5-turbo">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- 设置菜单折叠面板 -->
