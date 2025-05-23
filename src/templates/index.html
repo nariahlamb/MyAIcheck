@@ -1605,7 +1605,7 @@
             transition: left 0.3s ease;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             overflow-y: auto;
-            padding: 20px 25px;
+            padding: 15px 20px;
         }
         
         .settings-sidebar.open {
@@ -1616,8 +1616,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding: 15px 20px;  /* 增加内边距 */
+            margin-bottom: 15px;
+            padding: 5px 0 15px;
             border-bottom: 1px solid var(--border-color);
         }
         
@@ -1649,14 +1649,14 @@
         
         /* 侧边栏内容区域添加内边距 */
         .settings-sidebar .settings-section {
-            padding: 0 20px; /* 添加左右内边距 */
-            margin-bottom: 24px;
+            padding: 0 5px;
+            margin-bottom: 18px;
         }
         
         /* 侧边栏底部说明区域添加内边距 */
         .settings-sidebar .settings-help,
         .settings-sidebar .settings-info {
-            padding: 0 20px 20px; /* 添加左右内边距和底部内边距 */
+            padding: 0 5px 15px;
         }
         
         /* 开关和输入框靠右对齐 */
@@ -1745,7 +1745,8 @@
         .toast-notification {
             position: fixed;
             top: 20px;
-            right: -300px; /* 初始位置在屏幕外 */
+            left: 50%;
+            transform: translateX(-50%);
             background-color: var(--primary-color);
             color: white;
             padding: 12px 20px;
@@ -1760,7 +1761,6 @@
         }
         
         .toast-notification.show {
-            right: 20px;
             opacity: 1;
         }
         
@@ -1885,12 +1885,9 @@
             </div>
         </div>
         
-        <!-- 设置将自动保存提示 -->
-        <div id="help-section" class="settings-section">
-            <span class="help-text">设置将自动保存</span>
-        </div>
+        <!-- 移除"设置将自动保存"提示 -->
         
-        <!-- 设置将自动保存提示 -->
+        <!-- 设置信息按钮 -->
         <div id="help-section" class="settings-section">
             <button id="settings-info-btn" class="help-btn">参数说明</button>
         </div>
@@ -1900,22 +1897,22 @@
         
         <!-- 参数说明 -->
         <div class="settings-info">
-            <h4 style="margin-top: 20px; margin-bottom: 15px; color: var(--primary-dark);">验证参数说明</h4>
+            <h4 style="margin-top: 10px; margin-bottom: 10px; color: var(--primary-dark);">验证参数说明</h4>
             
-            <div style="background-color: rgba(240, 98, 146, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                <h5 style="margin-top: 0; margin-bottom: 8px; color: var(--primary-dark);">【批量大小】</h5>
+            <div style="background-color: rgba(240, 98, 146, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                <h5 style="margin-top: 0; margin-bottom: 6px; color: var(--primary-dark);">【批量大小】</h5>
                 <p style="margin: 0; font-size: 0.9rem;">是指一次性发送多少个密钥请求:</p>
-                <ul style="margin-top: 5px; padding-left: 20px; font-size: 0.9rem;">
+                <ul style="margin-top: 4px; padding-left: 20px; font-size: 0.9rem;">
                     <li>小批量(1-10): 速度较慢但更稳定，适合网络不稳定情况</li>
                     <li>中等值(10-25): 平衡的速度和稳定性，适合大多数情况</li>
                     <li>大批量(25-50): 速度快但可能触发API限制</li>
                 </ul>
             </div>
             
-            <div style="background-color: rgba(240, 98, 146, 0.1); padding: 15px; border-radius: 8px;">
-                <h5 style="margin-top: 0; margin-bottom: 8px; color: var(--primary-dark);">【并发验证】</h5>
+            <div style="background-color: rgba(240, 98, 146, 0.1); padding: 12px; border-radius: 8px;">
+                <h5 style="margin-top: 0; margin-bottom: 6px; color: var(--primary-dark);">【并发验证】</h5>
                 <p style="margin: 0; font-size: 0.9rem;">同时处理多个批次:</p>
-                <ul style="margin-top: 5px; padding-left: 20px; font-size: 0.9rem;">
+                <ul style="margin-top: 4px; padding-left: 20px; font-size: 0.9rem;">
                     <li>启用后可大幅提高验证速度</li>
                     <li>并发数建议3-5个，太多可能导致API限制</li>
                     <li>网络不稳定时建议关闭并发</li>
@@ -2466,6 +2463,7 @@
             // 设置自定义API模型选择器逻辑
             const openaiLikeModelSelect = document.getElementById('openai_like-model');
             const customModelContainer = document.getElementById('custom-model-container');
+            const customApiUrl = document.getElementById('custom-api-url');
             
             openaiLikeModelSelect.addEventListener('change', function() {
                 // 如果选择的是自定义选项，显示输入框
@@ -2482,6 +2480,32 @@
             } else {
                 customModelContainer.style.display = 'none';
             }
+            
+            // 为custom-api-url添加blur事件，在失去焦点时尝试获取模型列表
+            customApiUrl.addEventListener('blur', function() {
+                if (this.value.trim() && this.value.endsWith('/v1')) {
+                    const keys = getApiKeys();
+                    if (keys.length > 0 && autoDetectModels) {
+                        // 更新openai_like配置
+                        API_ENDPOINTS.openai_like.models = this.value + '/models';
+                        API_ENDPOINTS.openai_like.completions = this.value + '/chat/completions';
+                        detectAvailableModels(keys, 'openai_like');
+                    }
+                }
+            });
+            
+            // 为custom-api-url添加keyup事件，在按下Enter键时尝试获取模型列表
+            customApiUrl.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter' && this.value.trim() && this.value.endsWith('/v1')) {
+                    const keys = getApiKeys();
+                    if (keys.length > 0 && autoDetectModels) {
+                        // 更新openai_like配置
+                        API_ENDPOINTS.openai_like.models = this.value + '/models';
+                        API_ENDPOINTS.openai_like.completions = this.value + '/chat/completions';
+                        detectAvailableModels(keys, 'openai_like');
+                    }
+                }
+            });
             
             // 初始获取节点信息
             fetchNodeInfo();
