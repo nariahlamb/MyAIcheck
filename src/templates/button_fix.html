@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>按钮修复</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #D88CA0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #D88CA0;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #B56B80;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>按钮修复工具</h1>
+        <p>已经加载按钮修复脚本，这将解决按钮点击无反应的问题。</p>
+        <p>工作原理：脚本会查找所有按钮元素，并使用现代的事件监听方式替代旧的onclick属性。</p>
+        <p>如果您仍然遇到问题，请尝试以下步骤：</p>
+        <ol>
+            <li>刷新页面</li>
+            <li>清除浏览器缓存</li>
+            <li>使用不同的浏览器</li>
+        </ol>
+        <a href="/" class="btn">返回主页</a>
+    </div>
+
+    <!-- 添加按钮修复脚本 -->
+    <script src="/static/fix_button.js"></script>
+</body>
+</html> 

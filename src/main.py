@@ -3,11 +3,13 @@ Main entry point for the Flask application
 """
 import sys
 import os
-from flask import Flask, render_template # type: ignore
-from src.routes.api_key import api_key_bp
+from flask import Flask, render_template, send_from_directory # type: ignore
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
+# 导入API密钥蓝图
+from src.routes.api_key import api_key_bp
 
 # Create Flask app with correct static folder
 app = Flask(__name__, 
@@ -25,6 +27,16 @@ async_mode = 'threading'
 @app.route('/')
 def index():
     return render_template('index.html')
+
+# 添加新路由来提供修复脚本
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory(app.static_folder, filename)
+
+# 添加一个修复按钮的路由
+@app.route('/fix-buttons')
+def fix_buttons():
+    return render_template('button_fix.html')
 
 # Error handlers
 @app.errorhandler(413)
