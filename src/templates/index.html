@@ -2811,118 +2811,90 @@
             nodeInfoContent.innerHTML = '<div class="node-info-loading">正在获取节点信息...</div>';
             
             try {
-                // 先获取IP地址
-                fetch('https://api.ipify.org?format=json')
-                    .then(response => response.json())
-                    .then(data => {
-                        const ip = data.ip;
-                        document.getElementById('node-ip').textContent = ip;
-                        
-                        // 使用ipdata API获取更多信息
-                        // 优先使用Vercel环境变量中的API密钥，如果未配置则从localStorage获取
-                        let apiKey = localStorage.getItem('ipdata_api_key') || ipdataApiKey;
-                        
-                        // 如果没有API密钥，提示用户输入
-                        if (!apiKey) {
-                            // 将提示修改为建议用户配置Vercel环境变量
-                            showToast('要获取地理位置信息，请在Vercel中配置IPDATA_API_KEY环境变量', 'info', 5000);
-                            document.getElementById('node-region').textContent = '未知 (需要配置ipdata API密钥)';
-                            document.getElementById('node-country').textContent = '未知';
-                            document.getElementById('node-isp').textContent = '未知';
-                            return;
-                        }
-                        
-                        // 使用API密钥获取地理位置信息
-                        const ipDataUrl = `https://api.ipdata.co/${ip}?api-key=${apiKey}`;
-                        
-                        fetch(ipDataUrl)
-                            .then(response => response.json())
-                            .then(data => {
-                                const countryName = data.country_name || 'Unknown';
-                                const region = data.region || 'Unknown';
-                                const city = data.city || 'Unknown';
-                                const postalCode = data.postal || 'N/A';
-                                const timezone = data.timezone || 'Unknown';
-                                const isp = data.asn?.name || data.carrier?.name || 'Unknown';
-                                
-                                nodeInfoContent.innerHTML = `
-                                    <div class="node-info-item">
-                                        <span class="node-info-label">IP:</span>
-                                        <span class="node-info-value">${ip}</span>
-                                    </div>
-                                    <div class="node-info-item">
-                                        <span class="node-info-label">地区:</span>
-                                        <span class="node-info-value">${countryName} (${postalCode})</span>
-                                    </div>
-                                    <div class="node-info-item">
-                                        <span class="node-info-label">城市:</span>
-                                        <span class="node-info-value">${city}</span>
-                                    </div>
-                                    <div class="node-info-item">
-                                        <span class="node-info-label">ISP:</span>
-                                        <span class="node-info-value">${isp}</span>
-                                    </div>
-                                    <div class="node-info-item">
-                                        <span class="node-info-label">时区:</span>
-                                        <span class="node-info-value">${timezone}</span>
-                                    </div>
-                                    <div class="node-info-item">
-                                        <span class="node-info-label">ASN:</span>
-                                        <span class="node-info-value">${data.asn?.asn || 'Unknown'}</span>
-                                    </div>
-                                    <div class="node-info-item">
-                                        <span class="node-info-label">IP类型:</span>
-                                        <span class="node-info-value">${getIpType(data)}</span>
-                                    </div>
-                                    <div class="node-info-item">
-                                        <span class="node-info-label">可信度分数:</span>
-                                        <span class="node-info-value" style="color: #66BB6A; font-weight: bold;">
-                                            100 ${ipTrustScore < 30 ? '<span class="badge badge-warning">危险</span>' : ''}
-                                        </span>
-                                    </div>
-                                    <div class="node-info-item">
-                                        <span class="node-info-label">节点类型:</span>
-                                        <span class="node-info-value">${getNodeType(data)}</span>
-                                    </div>
-                                    <div class="node-info-item">
-                                        <span class="node-info-label">浏览器:</span>
-                                        <span class="node-info-value">${getBrowserName(navigator.userAgent)}</span>
-                                    </div>
-                                    <div class="node-info-item">
-                                        <span class="node-info-label">操作系统:</span>
-                                        <span class="node-info-value">${getOSName(navigator.userAgent)}</span>
-                                    </div>
-                                    <div class="node-info-item">
-                                        <span class="node-info-label">语言:</span>
-                                        <span class="node-info-value">${navigator.language}</span>
-                                    </div>
-                                    <div class="node-info-item">
-                                        <span class="node-info-label">更新时间:</span>
-                                        <span class="node-info-value">${new Date().toLocaleString()}</span>
-                                    </div>
-                                `;
-                            })
-                            .catch(error => {
-                                console.error('获取节点信息失败:', error);
-                                nodeInfoContent.innerHTML = `
-                                    <div class="node-info-item">
-                                        <span class="node-info-label">错误:</span>
-                                        <span class="node-info-value">获取节点信息失败: ${error.message}</span>
-                                    </div>
-                                    <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="fetchNodeInfo()">重试</button>
-                                `;
-                            });
-                    })
-                    .catch(error => {
-                        console.error('获取IP地址失败:', error);
-                        nodeInfoContent.innerHTML = `
+                // 使用直接获取IP方式，更可靠
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                const ip = ipData.ip || '未知IP';
+                
+                // 构建基本IP信息内容
+                let infoHTML = `
+                    <div class="node-info-item">
+                        <span class="node-info-label">IP:</span>
+                        <span class="node-info-value">${ip}</span>
+                    </div>
+                `;
+                
+                // 尝试获取更多IP信息
+                try {
+                    // 使用免费的ipapi服务，不需要API密钥
+                    const geoResponse = await fetch(`https://ipapi.co/${ip}/json/`);
+                    const geoData = await geoResponse.json();
+                    
+                    if (!geoData.error) {
+                        // 添加地理位置信息
+                        infoHTML += `
                             <div class="node-info-item">
-                                <span class="node-info-label">错误:</span>
-                                <span class="node-info-value">获取IP地址失败: ${error.message}</span>
+                                <span class="node-info-label">地区:</span>
+                                <span class="node-info-value">${geoData.country_name || '未知'} (${geoData.country_code || 'N/A'})</span>
                             </div>
-                            <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="fetchNodeInfo()">重试</button>
+                            <div class="node-info-item">
+                                <span class="node-info-label">城市:</span>
+                                <span class="node-info-value">${geoData.city || '未知'}, ${geoData.region || '未知'}</span>
+                            </div>
+                            <div class="node-info-item">
+                                <span class="node-info-label">ISP:</span>
+                                <span class="node-info-value">${geoData.org || '未知'}</span>
+                            </div>
+                            <div class="node-info-item">
+                                <span class="node-info-label">时区:</span>
+                                <span class="node-info-value">${geoData.timezone || '未知'}</span>
+                            </div>
+                            <div class="node-info-item">
+                                <span class="node-info-label">ASN:</span>
+                                <span class="node-info-value">${geoData.asn || '未知'}</span>
+                            </div>
                         `;
-                    });
+                    }
+                } catch (geoError) {
+                    console.error('获取地理位置信息失败:', geoError);
+                    infoHTML += `
+                        <div class="node-info-item">
+                            <span class="node-info-label">地理信息:</span>
+                            <span class="node-info-value">无法获取地理位置数据</span>
+                        </div>
+                    `;
+                }
+                
+                // 添加浏览器信息
+                const browserInfo = {
+                    userAgent: navigator.userAgent,
+                    language: navigator.language,
+                    platform: navigator.platform,
+                    vendor: navigator.vendor || 'Unknown'
+                };
+                
+                infoHTML += `
+                    <div class="node-info-item">
+                        <span class="node-info-label">浏览器:</span>
+                        <span class="node-info-value">${getBrowserName(browserInfo.userAgent)}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">操作系统:</span>
+                        <span class="node-info-value">${getOSName(browserInfo.userAgent)}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">语言:</span>
+                        <span class="node-info-value">${browserInfo.language}</span>
+                    </div>
+                    <div class="node-info-item">
+                        <span class="node-info-label">更新时间:</span>
+                        <span class="node-info-value">${new Date().toLocaleString()}</span>
+                    </div>
+                `;
+                
+                // 更新节点信息内容
+                nodeInfoContent.innerHTML = infoHTML;
+                
             } catch (error) {
                 console.error('获取节点信息失败:', error);
                 nodeInfoContent.innerHTML = `
