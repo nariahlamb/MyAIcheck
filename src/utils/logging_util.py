@@ -12,7 +12,7 @@ from typing import Optional, Any
 def setup_logger(
     name: str = "myaicheck", 
     log_level: int = logging.INFO,
-    log_to_file: bool = True,
+    log_to_file: bool = False,  # 默认不写入文件，避免Vercel环境问题
     log_dir: str = "logs"
 ) -> logging.Logger:
     """
@@ -49,19 +49,27 @@ def setup_logger(
     
     # 如果需要，还添加文件处理器
     if log_to_file:
-        # 确保日志目录存在
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
-            
-        # 基于日期的日志文件名
-        today = datetime.now().strftime("%Y-%m-%d")
-        log_file = os.path.join(log_dir, f"{name}_{today}.log")
+        # 检测是否在Vercel环境中
+        is_vercel = os.environ.get('VERCEL') == '1' or os.environ.get('VERCEL_ENV') is not None
         
-        # 创建文件处理器
-        file_handler = logging.FileHandler(log_file, encoding="utf-8")
-        file_handler.setLevel(log_level)
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+        if not is_vercel:  # 只在非Vercel环境中写入文件
+            try:
+                # 确保日志目录存在
+                if not os.path.exists(log_dir):
+                    os.makedirs(log_dir)
+                    
+                # 基于日期的日志文件名
+                today = datetime.now().strftime("%Y-%m-%d")
+                log_file = os.path.join(log_dir, f"{name}_{today}.log")
+                
+                # 创建文件处理器
+                file_handler = logging.FileHandler(log_file, encoding="utf-8")
+                file_handler.setLevel(log_level)
+                file_handler.setFormatter(formatter)
+                logger.addHandler(file_handler)
+            except (OSError, IOError) as e:
+                # 如果无法写入文件，记录警告但继续运行
+                sys.stderr.write(f"警告: 无法创建日志文件 - {str(e)}\n")
     
     return logger
 
