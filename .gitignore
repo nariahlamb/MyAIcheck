@@ -1,1 +1,11 @@
 requirements.txt.REMOTE
+node_modules/
+.vscode/
+.env
+.env.local
+__pycache__/
+*.py[cod]
+*$py.class
+.DS_Store
+*.log
+.vercel

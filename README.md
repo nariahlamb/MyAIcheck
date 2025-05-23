@@ -49,8 +49,12 @@ MyAIcheck是一款优雅高效的多平台AI接口密钥验证工具，支持批
 
 4. 浏览器访问
    ```
-   http://localhost:8000
+   http://localhost:5000
    ```
+
+### 纯静态使用
+
+如果您只需要浏览器端验证功能，可以直接打开 `src/templates/index.html` 在浏览器中使用，无需安装Python或启动服务器。这种方式下，所有验证都在浏览器中完成，更加隐私安全。
 
 ### 部署到Vercel
 
