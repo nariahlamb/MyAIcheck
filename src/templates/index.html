@@ -3543,3 +3543,265 @@
 • 小批量(1-10): 速度较慢但更稳定，适合网络不稳定情况
 • 中等值(10-25): 平衡的速度和稳定性，适合大多数情况
 • 大批量(25-50): 速度快但可能触发API限制
+
+【并发验证】同时处理多个批次:
+• 启用后可大幅提高验证速度
+• 并发数建议3-5个，太多可能导致API限制
+• 网络不稳定时建议关闭并发`);
+        }
+        
+        // 保存用户设置
+        function saveUserSettings() {
+            const settings = {
+                currentApiType: currentApiType,
+                isClientSideValidation: isClientSideValidation,
+                batchSize: batchSize,
+                concurrencyEnabled: concurrencyEnabled,
+                concurrencyCount: concurrencyCount,
+                autoDetectModels: autoDetectModels
+            };
+            
+            localStorage.setItem('userSettings', JSON.stringify(settings));
+        }
+        
+        // 设置保存设置的事件监听器
+        function setupSettingsSaving() {
+            // 批量大小滑块
+            document.getElementById('batch-size-slider').addEventListener('change', saveUserSettings);
+            document.getElementById('batch-size-input').addEventListener('change', saveUserSettings);
+            
+            // 并发设置
+            document.getElementById('concurrency-toggle').addEventListener('change', saveUserSettings);
+            document.getElementById('concurrency-input').addEventListener('change', saveUserSettings);
+            
+            // 客户端验证
+            document.getElementById('client-side-toggle').addEventListener('change', saveUserSettings);
+            
+            // 自动检测模型
+            document.getElementById('auto-detect-toggle').addEventListener('change', saveUserSettings);
+        }
+        
+        // 加载用户设置
+        function loadUserSettings() {
+            const settingsJson = localStorage.getItem('userSettings');
+            if (!settingsJson) return;
+            
+            try {
+                const settings = JSON.parse(settingsJson);
+                
+                // 加载API类型
+                if (settings.currentApiType) {
+                    currentApiType = settings.currentApiType;
+                    
+                    // 更新按钮状态
+                    document.querySelectorAll('.api-type-btn').forEach(btn => {
+                        if (btn.dataset.apiType === currentApiType) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新设置显示
+                    document.querySelectorAll('.api-settings').forEach(setting => {
+                        setting.style.display = setting.id === `${currentApiType}-settings` ? 'block' : 'none';
+                    });
+                }
+                
+                // 加载客户端验证设置
+                if (typeof settings.isClientSideValidation === 'boolean') {
+                    isClientSideValidation = settings.isClientSideValidation;
+                    document.getElementById('client-side-toggle').checked = isClientSideValidation;
+                }
+                
+                // 加载批量大小设置
+                if (settings.batchSize) {
+                    batchSize = settings.batchSize;
+                    document.getElementById('batch-size-slider').value = batchSize;
+                    document.getElementById('batch-size-input').value = batchSize;
+                }
+                
+                // 加载并发设置
+                if (typeof settings.concurrencyEnabled === 'boolean') {
+                    concurrencyEnabled = settings.concurrencyEnabled;
+                    document.getElementById('concurrency-toggle').checked = concurrencyEnabled;
+                    document.getElementById('concurrency-controls').style.display = concurrencyEnabled ? 'flex' : 'none';
+                }
+                
+                if (settings.concurrencyCount) {
+                    concurrencyCount = settings.concurrencyCount;
+                    document.getElementById('concurrency-input').value = concurrencyCount;
+                }
+                
+                // 加载自动检测模型设置
+                if (typeof settings.autoDetectModels === 'boolean') {
+                    autoDetectModels = settings.autoDetectModels;
+                    document.getElementById('auto-detect-toggle').checked = autoDetectModels;
+                }
+            } catch (error) {
+                console.error('加载用户设置失败:', error);
+            }
+        }
+        
+        // 查询可用的模型
+        async function detectAvailableModels(keys, apiType) {
+            if (!autoDetectModels || modelDetectionInProgress) return;
+            
+            // 检查是否有该API类型的模型选择器
+            const modelSelect = document.getElementById(`${apiType}-model`);
+            if (!modelSelect) return;
+            
+            // 将选择器置为"加载中"状态
+            modelDetectionInProgress = true;
+            const loadingOption = modelSelect.querySelector('option[value="loading"]');
+            if (loadingOption) {
+                loadingOption.style.display = 'block';
+                modelSelect.value = 'loading';
+            }
+            
+            try {
+                // 只使用第一个密钥进行检测
+                const key = keys[0];
+                
+                // 根据不同API类型设置请求参数
+                let url, headers;
+                
+                switch (apiType) {
+                    case 'openai':
+                        url = 'https://api.openai.com/v1/models';
+                        headers = { 'Authorization': `Bearer ${key}` };
+                        break;
+                    case 'claude':
+                        url = 'https://api.anthropic.com/v1/models';
+                        headers = { 
+                            'x-api-key': key,
+                            'anthropic-version': '2023-06-01'
+                        };
+                        break;
+                    case 'gemini':
+                        url = `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`;
+                        headers = {};
+                        break;
+                    case 'deepseek':
+                        url = 'https://api.deepseek.com/v1/models';
+                        headers = { 'Authorization': `Bearer ${key}` };
+                        break;
+                    case 'xai':
+                        url = 'https://api.xai.com/v1/models';
+                        headers = { 'Authorization': `Bearer ${key}` };
+                        break;
+                    case 'openai_like':
+                        const customConfig = getCustomApiConfig();
+                        if (!customConfig) {
+                            throw new Error('请提供有效的自定义API URL');
+                        }
+                        url = `${customConfig.custom_api_url}/models`;
+                        headers = { 'Authorization': `Bearer ${key}` };
+                        break;
+                    default:
+                        throw new Error(`不支持的API类型: ${apiType}`);
+                }
+                
+                // 发送请求
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: headers,
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                let models = [];
+                
+                // 根据不同API类型解析返回数据
+                switch (apiType) {
+                    case 'openai':
+                    case 'deepseek':
+                    case 'xai':
+                    case 'openai_like':
+                        models = data.data
+                            .filter(model => model.id)
+                            .map(model => model.id);
+                        break;
+                    case 'claude':
+                        models = data.models
+                            .filter(model => model.id)
+                            .map(model => model.id);
+                        break;
+                    case 'gemini':
+                        models = data.models
+                            .filter(model => model.name)
+                            .map(model => {
+                                // 从全名中提取模型名称
+                                const nameParts = model.name.split('/');
+                                return nameParts[nameParts.length - 1];
+                            });
+                        break;
+                }
+                
+                // 更新模型选择器
+                if (models.length > 0) {
+                    // 保存当前选中的值
+                    const currentValue = modelSelect.value;
+                    
+                    // 清除除了特殊选项外的所有选项
+                    const options = Array.from(modelSelect.options);
+                    options.forEach(option => {
+                        if (!['loading', 'failed'].includes(option.value)) {
+                            modelSelect.removeChild(option);
+                        }
+                    });
+                    
+                    // 添加检测到的模型选项
+                    models.forEach(modelId => {
+                        const option = document.createElement('option');
+                        option.value = modelId;
+                        option.textContent = modelId;
+                        
+                        // 将模型选项插入到特殊选项之前
+                        const loadingOption = modelSelect.querySelector('option[value="loading"]');
+                        modelSelect.insertBefore(option, loadingOption);
+                    });
+                    
+                    // 尝试恢复之前选中的值，如果不存在则选择第一个
+                    if (models.includes(currentValue) && currentValue !== 'loading' && currentValue !== 'failed') {
+                        modelSelect.value = currentValue;
+                    } else {
+                        modelSelect.value = models[0];
+                    }
+                    
+                    // 存储可用模型列表
+                    availableModels[apiType] = models;
+                } else {
+                    throw new Error('未检测到任何可用模型');
+                }
+            } catch (error) {
+                console.error(`检测${apiType}模型失败:`, error);
+                
+                // 显示失败选项
+                const failedOption = modelSelect.querySelector('option[value="failed"]');
+                if (failedOption) {
+                    failedOption.style.display = 'block';
+                    modelSelect.value = 'failed';
+                }
+            } finally {
+                // 隐藏加载选项
+                const loadingOption = modelSelect.querySelector('option[value="loading"]');
+                if (loadingOption) {
+                    loadingOption.style.display = 'none';
+                }
+                
+                modelDetectionInProgress = false;
+            }
+        }
+    </script>
+</body>
+</html>
