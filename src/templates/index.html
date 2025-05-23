@@ -1603,9 +1603,16 @@
             background-color: white;
             z-index: 1000;
             transition: left 0.3s ease;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
             overflow-y: auto;
             padding: 15px 20px;
+            border-radius: 0 16px 16px 0;
+            background-image: linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.02) 100%);
+        }
+        
+        .dark-mode .settings-sidebar {
+            background-color: #3B4252;
+            background-image: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.1) 100%);
         }
         
         .settings-sidebar.open {
@@ -1885,34 +1892,29 @@
             </div>
         </div>
         
-        <!-- 移除"设置将自动保存"提示 -->
-        
-        <!-- 设置信息按钮 -->
-        <div id="help-section" class="settings-section">
-            <button id="settings-info-btn" class="help-btn">参数说明</button>
-        </div>
+        <!-- 移除参数说明按钮 -->
         
         <!-- 弹幕通知元素 -->
         <div id="toast-notification" class="toast-notification">设置已自动保存</div>
         
-        <!-- 参数说明 -->
+        <!-- 参数说明 - 减小行距和字号，整体上移 -->
         <div class="settings-info">
-            <h4 style="margin-top: 10px; margin-bottom: 10px; color: var(--primary-dark);">验证参数说明</h4>
+            <h4 style="margin-top: 0; margin-bottom: 8px; color: var(--primary-dark); font-size: 1rem;">验证参数说明</h4>
             
-            <div style="background-color: rgba(240, 98, 146, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                <h5 style="margin-top: 0; margin-bottom: 6px; color: var(--primary-dark);">【批量大小】</h5>
-                <p style="margin: 0; font-size: 0.9rem;">是指一次性发送多少个密钥请求:</p>
-                <ul style="margin-top: 4px; padding-left: 20px; font-size: 0.9rem;">
+            <div style="background-color: rgba(240, 98, 146, 0.1); padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                <h5 style="margin-top: 0; margin-bottom: 4px; color: var(--primary-dark); font-size: 0.95rem;">【批量大小】</h5>
+                <p style="margin: 0; font-size: 0.85rem; line-height: 1.3;">是指一次性发送多少个密钥请求:</p>
+                <ul style="margin-top: 3px; padding-left: 16px; font-size: 0.85rem; line-height: 1.3;">
                     <li>小批量(1-10): 速度较慢但更稳定，适合网络不稳定情况</li>
                     <li>中等值(10-25): 平衡的速度和稳定性，适合大多数情况</li>
                     <li>大批量(25-50): 速度快但可能触发API限制</li>
                 </ul>
             </div>
             
-            <div style="background-color: rgba(240, 98, 146, 0.1); padding: 12px; border-radius: 8px;">
-                <h5 style="margin-top: 0; margin-bottom: 6px; color: var(--primary-dark);">【并发验证】</h5>
-                <p style="margin: 0; font-size: 0.9rem;">同时处理多个批次:</p>
-                <ul style="margin-top: 4px; padding-left: 20px; font-size: 0.9rem;">
+            <div style="background-color: rgba(240, 98, 146, 0.1); padding: 10px; border-radius: 8px;">
+                <h5 style="margin-top: 0; margin-bottom: 4px; color: var(--primary-dark); font-size: 0.95rem;">【并发验证】</h5>
+                <p style="margin: 0; font-size: 0.85rem; line-height: 1.3;">同时处理多个批次:</p>
+                <ul style="margin-top: 3px; padding-left: 16px; font-size: 0.85rem; line-height: 1.3;">
                     <li>启用后可大幅提高验证速度</li>
                     <li>并发数建议3-5个，太多可能导致API限制</li>
                     <li>网络不稳定时建议关闭并发</li>
@@ -2464,6 +2466,26 @@
             const openaiLikeModelSelect = document.getElementById('openai_like-model');
             const customModelContainer = document.getElementById('custom-model-container');
             const customApiUrl = document.getElementById('custom-api-url');
+            const customApiLoadingOption = openaiLikeModelSelect.querySelector('option[value="loading"]');
+            
+            // 确保其他API类型的加载状态可见性一致
+            document.querySelectorAll('.api-type-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 如果点击的是通用API按钮，确保加载选项可见
+                    if (this.dataset.apiType === 'openai_like') {
+                        // 重置通用API的模型选择器状态
+                        const options = Array.from(openaiLikeModelSelect.options);
+                        options.forEach(option => {
+                            if (option.value === 'loading') {
+                                option.style.display = 'block';
+                            } else if (option.value === 'failed') {
+                                option.style.display = 'none';
+                            }
+                        });
+                        openaiLikeModelSelect.value = 'loading';
+                    }
+                });
+            });
             
             openaiLikeModelSelect.addEventListener('change', function() {
                 // 如果选择的是自定义选项，显示输入框
@@ -2474,19 +2496,34 @@
                 }
             });
             
-            // 初始化自定义模型输入框显示状态
-            if (openaiLikeModelSelect.value === 'custom') {
-                customModelContainer.style.display = 'block';
-            } else {
-                customModelContainer.style.display = 'none';
-            }
+            // 为keys-input添加事件，当输入密钥时尝试获取模型列表
+            document.getElementById('keys-input').addEventListener('input', function() {
+                const currentApiType = document.querySelector('.api-type-btn.active').dataset.apiType;
+                if (currentApiType === 'openai_like' && customApiUrl.value.trim() && customApiUrl.value.endsWith('/v1')) {
+                    const keys = getApiKeys();
+                    if (keys.length > 0 && autoDetectModels) {
+                        // 设置为加载状态
+                        customApiLoadingOption.style.display = 'block';
+                        openaiLikeModelSelect.value = 'loading';
+                        
+                        // 更新openai_like配置
+                        API_ENDPOINTS.openai_like.models = customApiUrl.value + '/models';
+                        API_ENDPOINTS.openai_like.completions = customApiUrl.value + '/chat/completions';
+                        detectAvailableModels(keys, 'openai_like');
+                    }
+                }
+            });
             
-            // 为custom-api-url添加blur事件，在失去焦点时尝试获取模型列表
-            customApiUrl.addEventListener('blur', function() {
+            // 为custom-api-url添加input事件，当URL输入完成时检查是否有key
+            customApiUrl.addEventListener('input', function() {
                 if (this.value.trim() && this.value.endsWith('/v1')) {
                     const keys = getApiKeys();
                     if (keys.length > 0 && autoDetectModels) {
-                        // 更新openai_like配置
+                        // 设置为加载状态
+                        customApiLoadingOption.style.display = 'block';
+                        openaiLikeModelSelect.value = 'loading';
+                        
+                        // 更新openai_like配置并尝试获取模型
                         API_ENDPOINTS.openai_like.models = this.value + '/models';
                         API_ENDPOINTS.openai_like.completions = this.value + '/chat/completions';
                         detectAvailableModels(keys, 'openai_like');
@@ -2494,11 +2531,15 @@
                 }
             });
             
-            // 为custom-api-url添加keyup事件，在按下Enter键时尝试获取模型列表
-            customApiUrl.addEventListener('keyup', function(e) {
-                if (e.key === 'Enter' && this.value.trim() && this.value.endsWith('/v1')) {
+            // 保留之前添加的blur和keyup事件
+            customApiUrl.addEventListener('blur', function() {
+                if (this.value.trim() && this.value.endsWith('/v1')) {
                     const keys = getApiKeys();
                     if (keys.length > 0 && autoDetectModels) {
+                        // 设置为加载状态
+                        customApiLoadingOption.style.display = 'block';
+                        openaiLikeModelSelect.value = 'loading';
+                        
                         // 更新openai_like配置
                         API_ENDPOINTS.openai_like.models = this.value + '/models';
                         API_ENDPOINTS.openai_like.completions = this.value + '/chat/completions';
@@ -4053,20 +4094,21 @@
                         headers = { 'Authorization': `Bearer ${key}` };
                         break;
                     case 'openai_like':
-                        const customConfig = getCustomApiConfig();
-                        if (!customConfig) {
+                        if (!API_ENDPOINTS.openai_like.models) {
                             throw new Error('请提供有效的自定义API URL');
                         }
-                        url = `${customConfig.custom_api_url}/models`;
+                        url = API_ENDPOINTS.openai_like.models;
                         headers = { 'Authorization': `Bearer ${key}` };
                         break;
                     default:
                         throw new Error(`不支持的API类型: ${apiType}`);
                 }
                 
+                console.log(`尝试获取${apiType}的模型列表，URL: ${url}`);
+                
                 // 发送请求
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 增加超时时间到15秒
                 
                 const response = await fetch(url, {
                     method: 'GET',
@@ -4111,6 +4153,8 @@
                 
                 // 更新模型选择器
                 if (models.length > 0) {
+                    console.log(`成功获取到${apiType}的${models.length}个模型`);
+                    
                     // 保存当前选中的值
                     const currentValue = modelSelect.value;
                     
