@@ -2457,13 +2457,6 @@
             // 初始化节点信息显示状态
             concurrencyControls.style.display = concurrencyEnabled ? 'flex' : 'none';
             
-            // 设置说明按钮 - 不再需要
-            /*
-            document.getElementById('settings-info-btn').addEventListener('click', function() {
-                showBatchConcurrencyInfo();
-            });
-            */
-            
             // 加载用户之前的设置
             loadUserSettings();
             
@@ -2493,7 +2486,7 @@
             // 初始获取节点信息
             fetchNodeInfo();
             
-            // 侧边栏控制逻辑 - 基于前面的代码修改
+            // 侧边栏控制逻辑
             const settingsGearBtn = document.getElementById('settings-gear-btn');
             const settingsSidebar = document.getElementById('settings-sidebar');
             const settingsOverlay = document.getElementById('settings-overlay');
@@ -2524,21 +2517,6 @@
             
             // 关闭侧边栏 - 点击遮罩层
             settingsOverlay.addEventListener('click', closeSidebar);
-            
-                settingsSidebar.classList.add('open');
-                settingsOverlay.style.display = 'block';
-                localStorage.setItem('settingsSidebarOpen', 'true');
-                document.body.style.overflow = 'hidden'; // 防止背景滚动
-            });
-            
-            // 关闭侧边栏 - 通过关闭按钮
-            settingsCloseBtn.addEventListener('click', closeSidebar);
-            
-            // 关闭侧边栏 - 通过点击遮罩层
-            settingsOverlay.addEventListener('click', closeSidebar);
-            
-            // 设置保存用户设置的事件监听器
-            setupSettingsSaving();
         });
         
         // 初始化空结果状态
@@ -4163,11 +4141,17 @@
             }
         }
         
+        // 根据屏幕高度调整侧边栏高度
+        function adjustSidebarHeight() {
+            const settingsSidebar = document.getElementById('settings-sidebar');
+            if (settingsSidebar) {
+                const viewportHeight = window.innerHeight;
+                settingsSidebar.style.maxHeight = `${viewportHeight}px`;
+                settingsSidebar.style.height = `${viewportHeight}px`;
+            }
+        }
+        
         // 侧边栏控制
-        const settingsSidebar = document.getElementById('settings-sidebar');
-        const settingsOverlay = document.getElementById('settings-overlay');
-        const settingsGearBtn = document.getElementById('settings-gear-btn');
-        const settingsCloseBtn = document.getElementById('settings-close-btn');
         const toastNotification = document.getElementById('toast-notification');
         
         // 显示弹幕通知
@@ -4188,10 +4172,13 @@
         
         // 更新关闭侧边栏的代码，添加弹幕通知
         function closeSidebar() {
+            const settingsSidebar = document.getElementById('settings-sidebar');
+            const settingsOverlay = document.getElementById('settings-overlay');
             settingsSidebar.style.left = '-400px';
             settingsOverlay.style.display = 'none';
             // 显示设置已保存的弹幕提示
             showToast('设置已自动保存');
+            localStorage.setItem('settingsSidebarOpen', 'false');
         }
         
         // 打开侧边栏
