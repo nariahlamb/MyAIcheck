@@ -1813,82 +1813,82 @@
             <button class="settings-close-btn" id="settings-close-btn">×</button>
         </div>
         
-                            <!-- 验证方式设置 -->
-                            <div class="settings-section">
-                                <div class="toggle-container">
-                                    <span class="toggle-label">使用浏览器端验证:</span>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="client-side-toggle" checked>
-                                        <span class="toggle-slider"></span>
-                                    </label>
-                                </div>
-                                
-                                <div class="toggle-container auto-detect-container">
-                                    <span class="toggle-label">自动检测可用模型:</span>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="auto-detect-toggle" checked>
-                                        <span class="toggle-slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <!-- 并发设置 -->
-                            <div class="settings-section">
-                                <div class="concurrency-container">
-                                    <div class="concurrency-header">
-                                        <span class="concurrency-label">并发验证:</span>
-                                        <label class="toggle-switch">
-                                            <input type="checkbox" id="concurrency-toggle" checked>
-                                            <span class="toggle-slider"></span>
-                                        </label>
-                                    </div>
-                                    <div class="concurrency-controls" id="concurrency-controls">
-                                        <span class="concurrency-value-label">并发数量:</span>
-                                        <input 
-                                            type="number" 
-                                            id="concurrency-input" 
-                                            min="1" 
-                                            max="10" 
-                                            value="3" 
-                                            class="concurrency-input"
-                                        >
-                                    </div>
-                                </div>
-                                
-                                <div class="batch-size-container">
-                                    <div class="batch-size-header">
-                                        <span class="batch-size-label">每批验证数量:</span>
-                                    </div>
-                                    <div class="batch-size-controls">
-                                        <input 
-                                            type="range" 
-                                            id="batch-size-slider" 
-                                            min="1" 
-                                            max="50" 
-                                            value="10" 
-                                            class="batch-size-slider"
-                                        >
-                                        <input 
-                                            type="number" 
-                                            id="batch-size-input" 
-                                            min="1" 
-                                            max="50" 
-                                            value="10" 
-                                            class="batch-size-input"
-                                        >
-                                    </div>
-                                    <div class="batch-size-marks">
-                                        <span>慢(1)</span>
-                                        <span>平衡(10)</span>
-                                        <span>快(50)</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
+        <!-- 验证方式设置 -->
+        <div class="settings-section">
+            <div class="toggle-container">
+                <span class="toggle-label">使用浏览器端验证:</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="client-side-toggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            <div class="toggle-container auto-detect-container">
+                <span class="toggle-label">自动检测可用模型:</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="auto-detect-toggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+        
+        <!-- 并发设置 -->
+        <div class="settings-section">
+            <div class="concurrency-container">
+                <div class="concurrency-header">
+                    <span class="concurrency-label">并发验证:</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="concurrency-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="concurrency-controls" id="concurrency-controls">
+                    <span class="concurrency-value-label">并发数量:</span>
+                    <input 
+                        type="number" 
+                        id="concurrency-input" 
+                        min="1" 
+                        max="10" 
+                        value="3" 
+                        class="concurrency-input"
+                    >
+                </div>
+            </div>
+            
+            <div class="batch-size-container">
+                <div class="batch-size-header">
+                    <span class="batch-size-label">每批验证数量:</span>
+                </div>
+                <div class="batch-size-controls">
+                    <input 
+                        type="range" 
+                        id="batch-size-slider" 
+                        min="1" 
+                        max="50" 
+                        value="10" 
+                        class="batch-size-slider"
+                    >
+                    <input 
+                        type="number" 
+                        id="batch-size-input" 
+                        min="1" 
+                        max="50" 
+                        value="10" 
+                        class="batch-size-input"
+                    >
+                </div>
+                <div class="batch-size-marks">
+                    <span>慢(1)</span>
+                    <span>平衡(10)</span>
+                    <span>快(50)</span>
+                </div>
+            </div>
+        </div>
+        
         <!-- 设置将自动保存提示 -->
         <div id="help-section" class="settings-section">
-                                <span class="help-text">设置将自动保存</span>
-                            </div>
+            <span class="help-text">设置将自动保存</span>
+        </div>
         
         <!-- 设置将自动保存提示 -->
         <div id="help-section" class="settings-section">
@@ -2539,6 +2539,7 @@
             
             // 设置保存用户设置的事件监听器
             setupSettingsSaving();
+        });
         
         // 初始化空结果状态
         function initializeEmptyResults() {
@@ -3040,7 +3041,7 @@
                 }
             }
             
-                // 为Gemini设置带有选定模型的completions URL
+            // 为Gemini设置带有选定模型的completions URL
             if (currentApiType === 'gemini') {
                 const selectedModel = getSelectedModel();
                 API_ENDPOINTS.gemini.completions = API_ENDPOINTS.gemini.completions.replace('MODEL_NAME', selectedModel);
