@@ -2332,6 +2332,7 @@
                     
                     <div class="actions-container">
                         <button id="validate-btn" class="btn btn-primary">验证密钥</button>
+                        <button id="export-models-btn" class="btn btn-success">导出模型列表</button>
                         <button id="clear-btn" class="btn btn-secondary">清除</button>
                     </div>
                     
@@ -2582,7 +2583,12 @@
             document.getElementById('export-all-results-btn').addEventListener('click', function() {
                 exportResults('all');
             });
-            
+
+            // 导出模型列表按钮
+            document.getElementById('export-models-btn').addEventListener('click', function() {
+                exportModelsList();
+            });
+
             // 客户端验证切换
             document.getElementById('client-side-toggle').addEventListener('change', function() {
                 isClientSideValidation = this.checked;
@@ -4037,7 +4043,119 @@
             const day = String(date.getDate()).padStart(2, '0');
             return `${year}${month}${day}`;
         }
-        
+
+        // 导出模型列表功能
+        async function exportModelsList() {
+            // 获取按钮元素和原始文本（在try块外声明）
+            const exportBtn = document.getElementById('export-models-btn');
+            const originalText = exportBtn.textContent;
+
+            try {
+                // 获取当前API密钥
+                const keys = getApiKeys();
+                if (keys.length === 0) {
+                    alert('请先输入API密钥');
+                    return;
+                }
+
+                // 获取第一个API密钥用于获取模型列表
+                const apiKey = keys[0];
+
+                // 显示加载状态
+                exportBtn.textContent = '获取模型列表中...';
+                exportBtn.disabled = true;
+
+                // 准备请求数据
+                const requestData = {
+                    api_type: currentApiType,
+                    api_key: apiKey
+                };
+
+                // 对于openai_like类型，需要提供自定义API URL
+                if (currentApiType === 'openai_like') {
+                    const customApiUrl = document.getElementById('custom-api-url').value.trim();
+                    if (!customApiUrl) {
+                        alert('请先输入自定义API URL');
+                        return;
+                    }
+                    if (!customApiUrl.endsWith('/v1')) {
+                        alert('自定义API URL必须以 /v1 结尾');
+                        return;
+                    }
+                    requestData.custom_api_url = customApiUrl;
+                }
+
+                // 获取模型列表
+                const modelsResponse = await fetch('/models', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!modelsResponse.ok) {
+                    const errorData = await modelsResponse.json();
+                    throw new Error(errorData.error || '获取模型列表失败');
+                }
+
+                const modelsData = await modelsResponse.json();
+
+                if (!modelsData.success) {
+                    throw new Error(modelsData.error || '获取模型列表失败');
+                }
+
+                // 导出模型列表
+                const exportResponse = await fetch('/export-models', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        api_type: currentApiType,
+                        api_key: apiKey,
+                        models_data: modelsData,
+                        custom_api_url: requestData.custom_api_url
+                    })
+                });
+
+                if (!exportResponse.ok) {
+                    const errorData = await exportResponse.json();
+                    throw new Error(errorData.error || '导出失败');
+                }
+
+                // 下载文件
+                const blob = await exportResponse.blob();
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+
+                // 获取文件名
+                const contentDisposition = exportResponse.headers.get('Content-Disposition');
+                let fileName = `models_export_${currentApiType}_${getFormattedDate()}.txt`;
+                if (contentDisposition) {
+                    const match = contentDisposition.match(/filename="?([^"]+)"?/);
+                    if (match && match[1]) {
+                        fileName = match[1];
+                    }
+                }
+
+                link.download = fileName;
+                link.click();
+                URL.revokeObjectURL(url);
+
+                // 显示成功消息
+                alert(`模型列表导出成功！\n文件名：${fileName}\n模型数量：${modelsData.models.length}`);
+
+            } catch (error) {
+                alert(`导出模型列表失败: ${error.message}`);
+            } finally {
+                // 恢复按钮状态
+                exportBtn.textContent = originalText;
+                exportBtn.disabled = false;
+            }
+        }
+
         // 浏览器和操作系统识别函数已移至ip-utils.js
         
         // 保存用户设置

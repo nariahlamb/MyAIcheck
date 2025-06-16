@@ -6,13 +6,13 @@ import io
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
-from src.models.api_key import OpenAIKeyValidator
-from src.models.claude_key import ClaudeKeyValidator
-from src.models.gemini_key import GeminiKeyValidator
+from models.api_key import OpenAIKeyValidator
+from models.claude_key import ClaudeKeyValidator
+from models.gemini_key import GeminiKeyValidator
 
 # 尝试导入OpenAILikeKeyValidator，如果不存在则忽略
 try:
-    from src.models.openai_like_key import OpenAILikeKeyValidator
+    from models.openai_like_key import OpenAILikeKeyValidator
     HAS_OPENAI_LIKE = True
 except ImportError:
     HAS_OPENAI_LIKE = False
@@ -189,6 +189,155 @@ def export_keys():
         )
     except Exception as e:
         return jsonify({'error': f'导出失败: {str(e)}'}), 500
+
+@api_key_bp.route('/models', methods=['POST'])
+def get_models():
+    """
+    Endpoint to get available models for a specific API provider
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': '请求体不能为空'}), 400
+
+        api_type = data.get('api_type', 'openai')
+        api_key = data.get('api_key', '')
+
+        if not api_key:
+            return jsonify({'error': 'API Key是必填项'}), 400
+
+        # 检查API类型是否支持
+        if api_type not in API_VALIDATORS:
+            return jsonify({'error': f'不支持的API类型: {api_type}'}), 400
+
+        # 获取对应的验证器
+        validator = API_VALIDATORS[api_type]
+
+        # 对于 openai_like 类型，获取自定义参数
+        custom_api_url = None
+        if api_type == 'openai_like' and HAS_OPENAI_LIKE:
+            custom_api_url = data.get('custom_api_url')
+            if not custom_api_url:
+                return jsonify({'error': '自定义API URL是必填项'}), 400
+            if not custom_api_url.endswith('/v1'):
+                return jsonify({'error': '自定义API URL必须以 /v1 结尾'}), 400
+
+        # 使用同步方式处理，增加超时控制
+        def run_get_models():
+            import asyncio
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                if api_type == 'openai_like' and HAS_OPENAI_LIKE:
+                    return loop.run_until_complete(validator.get_models(api_key, custom_api_url))
+                else:
+                    return loop.run_until_complete(validator.get_models(api_key))
+            finally:
+                loop.close()
+
+        # 在线程池中执行异步操作，添加超时控制
+        future = executor.submit(run_get_models)
+        try:
+            timeout = 30  # 30秒超时
+            models_data = future.result(timeout=timeout)
+        except TimeoutError:
+            return jsonify({
+                'error': '获取模型列表超时，请稍后重试'
+            }), 504
+        except Exception as e:
+            return jsonify({'error': f'获取模型列表失败: {str(e)}'}), 500
+
+        return jsonify(models_data)
+
+    except Exception as e:
+        return jsonify({'error': f'服务器错误: {str(e)}'}), 500
+
+@api_key_bp.route('/export-models', methods=['POST'])
+def export_models():
+    """
+    Endpoint to export models list to TXT file
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': '请求体不能为空'}), 400
+
+        api_type = data.get('api_type', 'openai')
+        api_key = data.get('api_key', '')
+        models_data = data.get('models_data', {})
+        custom_api_url = data.get('custom_api_url', '')
+
+        if not api_key:
+            return jsonify({'error': 'API Key是必填项'}), 400
+
+        if not models_data:
+            return jsonify({'error': '模型数据不能为空'}), 400
+
+        # 对于openai_like类型，将自定义API URL添加到models_data中
+        if api_type == 'openai_like' and custom_api_url:
+            models_data['api_url'] = custom_api_url
+
+        # 生成TXT文件内容
+        txt_content = generate_models_txt(api_type, api_key, models_data)
+
+        # Create in-memory file
+        buffer = io.BytesIO()
+        buffer.write(txt_content.encode('utf-8-sig'))
+        buffer.seek(0)
+
+        # 生成文件名
+        timestamp = time.strftime('%Y%m%d_%H%M%S')
+        filename = f"models_export_{api_type}_{timestamp}.txt"
+
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='text/plain; charset=utf-8-sig'
+        )
+
+    except Exception as e:
+        return jsonify({'error': f'导出失败: {str(e)}'}), 500
+
+def generate_models_txt(api_type: str, api_key: str, models_data: dict) -> str:
+    """
+    Generate TXT content for models export - Simple format with one model per line
+    """
+    lines = []
+
+    # 获取模型列表
+    models = models_data.get('models', [])
+
+    # 每个模型一行，只显示模型名称
+    for model in models:
+        model_name = model.get('id', 'N/A')
+        lines.append(model_name)
+
+    # 添加空行
+    lines.append("")
+
+    # 添加AI Provider信息
+    provider_urls = {
+        'openai': 'https://api.openai.com/v1',
+        'claude': 'https://api.anthropic.com/v1',
+        'gemini': 'https://generativelanguage.googleapis.com/v1beta',
+        'deepseek': 'https://api.deepseek.com/v1',
+        'xai': 'https://api.x.ai/v1',
+        'openai_like': models_data.get('api_url', 'Custom API URL')
+    }
+
+    provider_url = provider_urls.get(api_type, f'Unknown provider: {api_type}')
+    lines.append(f"AIprovider: {provider_url}")
+
+    return '\n'.join(lines)
+
+def mask_api_key(api_key: str) -> str:
+    """
+    Mask API key for security (show first 4 and last 4 characters)
+    """
+    if len(api_key) <= 8:
+        return "***"
+    return f"{api_key[:4]}***{api_key[-4:]}"
 
 @api_key_bp.route('/')
 def index():

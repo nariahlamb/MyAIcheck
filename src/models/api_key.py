@@ -225,7 +225,73 @@ class OpenAIKeyValidator:
                 results.extend(valid_results)
                 
         return results
-    
+
+    @staticmethod
+    async def get_models(api_key: str) -> Dict:
+        """
+        Get available models for the given OpenAI API key
+
+        Args:
+            api_key: OpenAI API key
+
+        Returns:
+            Dictionary with models data or error information
+        """
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+
+        timeout = aiohttp.ClientTimeout(total=15)
+        connector = aiohttp.TCPConnector(ssl=False, force_close=True)
+
+        try:
+            async with aiohttp.ClientSession(timeout=timeout, connector=connector) as session:
+                response = await session.get(
+                    OpenAIKeyValidator.PRIMARY_API_URL,
+                    headers=headers
+                )
+
+                if response.status == 200:
+                    data = await response.json()
+                    return {
+                        'success': True,
+                        'models': data.get('data', []),
+                        'provider': 'openai'
+                    }
+                elif response.status == 401:
+                    return {
+                        'success': False,
+                        'error': '无效的API密钥'
+                    }
+                else:
+                    error_data = await response.json()
+                    return {
+                        'success': False,
+                        'error': error_data.get('error', {}).get('message', f'HTTP错误: {response.status}')
+                    }
+
+        except aiohttp.ClientConnectorError:
+            return {
+                'success': False,
+                'error': '连接错误，无法访问OpenAI API'
+            }
+        except aiohttp.ClientError as e:
+            return {
+                'success': False,
+                'error': f'网络错误: {str(e)}'
+            }
+        except asyncio.TimeoutError:
+            return {
+                'success': False,
+                'error': '请求超时'
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'未知错误: {str(e)}'
+            }
+
     @staticmethod
     def parse_input_keys(input_text: str) -> List[str]:
         """

@@ -9,9 +9,9 @@ from flask import Flask, render_template, send_from_directory # type: ignore
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 # 导入蓝图
-from src.routes.api_key import api_key_bp
-from src.routes.feedback import feedback_bp
-from src.routes.advanced import advanced_bp
+from routes.api_key import api_key_bp
+from routes.feedback import feedback_bp
+from routes.advanced import advanced_bp
 
 # Create Flask app with correct static folder
 app = Flask(__name__, 
