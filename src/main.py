@@ -8,10 +8,17 @@ from flask import Flask, render_template, send_from_directory # type: ignore
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-# 导入蓝图
-from routes.api_key import api_key_bp
-from routes.feedback import feedback_bp
-from routes.advanced import advanced_bp
+# 导入蓝图 - 使用try-except以兼容不同环境
+try:
+    # 尝试相对导入（本地开发）
+    from routes.api_key import api_key_bp
+    from routes.feedback import feedback_bp
+    from routes.advanced import advanced_bp
+except ImportError:
+    # 如果相对导入失败，尝试绝对导入（Vercel部署）
+    from src.routes.api_key import api_key_bp
+    from src.routes.feedback import feedback_bp
+    from src.routes.advanced import advanced_bp
 
 # Create Flask app with correct static folder
 app = Flask(__name__, 

@@ -6,16 +6,28 @@ import io
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
-from models.api_key import OpenAIKeyValidator
-from models.claude_key import ClaudeKeyValidator
-from models.gemini_key import GeminiKeyValidator
+# 导入模型验证器 - 使用try-except以兼容不同环境
+try:
+    # 尝试相对导入（本地开发）
+    from models.api_key import OpenAIKeyValidator
+    from models.claude_key import ClaudeKeyValidator
+    from models.gemini_key import GeminiKeyValidator
+except ImportError:
+    # 如果相对导入失败，尝试绝对导入（Vercel部署）
+    from src.models.api_key import OpenAIKeyValidator
+    from src.models.claude_key import ClaudeKeyValidator
+    from src.models.gemini_key import GeminiKeyValidator
 
 # 尝试导入OpenAILikeKeyValidator，如果不存在则忽略
 try:
     from models.openai_like_key import OpenAILikeKeyValidator
     HAS_OPENAI_LIKE = True
 except ImportError:
-    HAS_OPENAI_LIKE = False
+    try:
+        from src.models.openai_like_key import OpenAILikeKeyValidator
+        HAS_OPENAI_LIKE = True
+    except ImportError:
+        HAS_OPENAI_LIKE = False
 
 # Create blueprint
 api_key_bp = Blueprint('api_key', __name__)

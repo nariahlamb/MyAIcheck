@@ -5,11 +5,21 @@ import asyncio
 import json
 from datetime import datetime
 from flask import Blueprint, request, jsonify, render_template
-from src.models.key_analyzer import KeyAnalyzer
-from src.models.health_checker import APIHealthChecker
-from src.utils.error_handler import handle_errors, APIError
-from src.utils.security import sanitize_api_key
-from src.utils.logging_util import setup_logger
+# 导入模块 - 使用try-except以兼容不同环境
+try:
+    # 尝试相对导入（本地开发）
+    from models.key_analyzer import KeyAnalyzer
+    from models.health_checker import APIHealthChecker
+    from utils.error_handler import handle_errors, APIError
+    from utils.security import sanitize_api_key
+    from utils.logging_util import setup_logger
+except ImportError:
+    # 如果相对导入失败，尝试绝对导入（Vercel部署）
+    from src.models.key_analyzer import KeyAnalyzer
+    from src.models.health_checker import APIHealthChecker
+    from src.utils.error_handler import handle_errors, APIError
+    from src.utils.security import sanitize_api_key
+    from src.utils.logging_util import setup_logger
 
 # 创建蓝图
 advanced_bp = Blueprint('advanced', __name__, url_prefix='/api/advanced')
