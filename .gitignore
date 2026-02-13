@@ -10,3 +10,4 @@ __pycache__/
 *.log
 .vercel
 .ace-tool/
+.workflow/
