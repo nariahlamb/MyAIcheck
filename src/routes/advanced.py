@@ -43,6 +43,7 @@ def analyze_key():
         check_models = data.get('check_models', True)
         check_quota = data.get('check_quota', True)
         check_performance = data.get('check_performance', False)
+        preferred_model = (data.get('model') or '').strip() or None
         
         if not api_key:
             raise APIError("API密钥不能为空", status_code=400)
@@ -54,7 +55,7 @@ def analyze_key():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         analyzer = KeyAnalyzer()
-        result = loop.run_until_complete(analyzer.analyze_key(api_key))
+        result = loop.run_until_complete(analyzer.analyze_key(api_key, preferred_model=preferred_model))
         loop.close()
         
         # 添加分析时间戳
@@ -69,7 +70,12 @@ def analyze_key():
         
         # 记录日志(不包含完整密钥)
         safe_key = api_key[:4] + "..." + api_key[-4:] if len(api_key) > 8 else "***"
-        logger.info(f"分析密钥 {safe_key}, 类型: {result.get('api_type', '未知')}, 有效: {result.get('valid', False)}")
+        logger.info(
+            f"分析密钥 {safe_key}, 类型: {result.get('api_type', '未知')}, "
+            f"请求模型: {result.get('selected_model', '未指定')}, "
+            f"实际模型: {result.get('effective_model', '未提供')}, "
+            f"有效: {result.get('valid', False)}"
+        )
         
         return jsonify({
             "success": True,

@@ -94,6 +94,9 @@ def validate_keys():
             
         # 调整批处理大小，避免并发过多
         batch_size = min(3, max(1, len(api_keys) // 50))  # Dynamic batch sizing
+        model = request.form.get('model', '').strip()
+        if model in ['loading', 'failed']:
+            model = ''
 
         # 对于 openai_like 类型，获取自定义参数
         custom_api_url = None
@@ -115,7 +118,7 @@ def validate_keys():
                 if api_type == 'openai_like' and HAS_OPENAI_LIKE:
                     return loop.run_until_complete(validator.validate_keys_batch(api_keys, batch_size, custom_api_url, custom_model_name))
                 else:
-                    return loop.run_until_complete(validator.validate_keys_batch(api_keys, batch_size))
+                    return loop.run_until_complete(validator.validate_keys_batch(api_keys, batch_size, model=model or None))
             finally:
                 loop.close()
         

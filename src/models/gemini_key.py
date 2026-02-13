@@ -30,7 +30,12 @@ class GeminiKeyValidator:
     }
     
     @staticmethod
-    async def validate_single_key(session: aiohttp.ClientSession, api_key: str, retry_count=2) -> Dict:
+    async def validate_single_key(
+        session: aiohttp.ClientSession,
+        api_key: str,
+        retry_count=2,
+        model: Optional[str] = None
+    ) -> Dict:
         """
         Validate a single Gemini API key with retry mechanism
         
@@ -46,14 +51,66 @@ class GeminiKeyValidator:
             "Content-Type": "application/json"
         }
         
+        effective_model = model.strip() if model else None
         result = {
             "key": api_key,
             "valid": False,
             "error_code": None,
-            "error_message": None
+            "error_message": None,
+            "selected_model": model,
+            "effective_model": None,
+            "validation_path": None
         }
+
+        if model:
+            result["validation_path"] = "completion"
+            result["effective_model"] = effective_model
+            try:
+                model_url = f"https://generativelanguage.googleapis.com/v1beta/models/{effective_model}:generateContent?key={api_key}"
+                response = await session.post(
+                    model_url,
+                    headers=headers,
+                    json=GeminiKeyValidator.TEST_PAYLOAD,
+                    timeout=aiohttp.ClientTimeout(total=15)
+                )
+
+                status_code = response.status
+                if status_code == 200:
+                    result["valid"] = True
+                elif status_code == 404:
+                    result["error_code"] = "INVALID_MODEL"
+                    result["error_message"] = f"模型不可用: {effective_model}"
+                elif status_code in [400, 403]:
+                    response_text = await response.text()
+                    if "API key" in response_text:
+                        result["error_code"] = "INVALID_KEY"
+                        result["error_message"] = "无效的API密钥"
+                    else:
+                        result["error_code"] = f"HTTP_{status_code}"
+                        result["error_message"] = f"请求失败: {response_text[:120]}"
+                elif status_code == 429:
+                    result["error_code"] = "RATE_LIMIT"
+                    result["error_message"] = "Gemini API速率限制"
+                else:
+                    result["error_code"] = f"HTTP_{status_code}"
+                    result["error_message"] = f"HTTP错误: {status_code}"
+            except aiohttp.ClientConnectorError as e:
+                result["error_code"] = "CONNECTION_ERROR"
+                result["error_message"] = f"连接错误: {str(e)}"
+            except aiohttp.ClientError as e:
+                result["error_code"] = "NETWORK_ERROR"
+                result["error_message"] = f"网络错误: {str(e)}"
+            except asyncio.TimeoutError:
+                result["error_code"] = "TIMEOUT"
+                result["error_message"] = "请求超时"
+            except Exception as e:
+                result["error_code"] = "UNKNOWN_ERROR"
+                result["error_message"] = f"未知错误: {str(e)}"
+            return result
         
         # 尝试主端点 - Gemini需要在URL中添加key参数
+        result["validation_path"] = "models"
+        result["effective_model"] = "models-endpoint"
         for attempt in range(retry_count):
             try:
                 # 添加随机延迟避免请求过于集中
@@ -128,6 +185,8 @@ class GeminiKeyValidator:
         # 如果主端点失败，尝试备用端点
         if not result["valid"] and result["error_code"] in ["CONNECTION_ERROR", "TIMEOUT"]:
             try:
+                result["validation_path"] = "completion"
+                result["effective_model"] = "gemini-2.5-flash-preview-04-17"
                 # 使用POST请求验证 - 仍需在URL中添加key参数
                 url = f"{GeminiKeyValidator.BACKUP_API_URL}?key={api_key}"
                 response = await session.post(
@@ -162,7 +221,11 @@ class GeminiKeyValidator:
         return result
     
     @staticmethod
-    async def validate_keys_batch(api_keys: List[str], batch_size: int = 3) -> List[Dict]:
+    async def validate_keys_batch(
+        api_keys: List[str],
+        batch_size: int = 3,
+        model: Optional[str] = None
+    ) -> List[Dict]:
         """
         Validate a batch of Gemini API keys with concurrency control
         
@@ -202,7 +265,7 @@ class GeminiKeyValidator:
                 
             # Process batch concurrently
             async with aiohttp.ClientSession(timeout=timeout, connector=connector) as session:
-                tasks = [GeminiKeyValidator.validate_single_key(session, key) for key in batch]
+                tasks = [GeminiKeyValidator.validate_single_key(session, key, model=model) for key in batch]
                 batch_results = await asyncio.gather(*tasks, return_exceptions=True)
                 
                 # 过滤掉可能的异常结果
@@ -214,7 +277,10 @@ class GeminiKeyValidator:
                             "key": "unknown",
                             "valid": False,
                             "error_code": "EXCEPTION",
-                            "error_message": f"处理异常: {str(res)}"
+                            "error_message": f"处理异常: {str(res)}",
+                            "selected_model": model,
+                            "effective_model": None,
+                            "validation_path": None
                         })
                     else:
                         valid_results.append(res)

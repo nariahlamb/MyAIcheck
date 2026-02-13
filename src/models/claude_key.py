@@ -28,7 +28,12 @@ class ClaudeKeyValidator:
     }
     
     @staticmethod
-    async def validate_single_key(session: aiohttp.ClientSession, api_key: str, retry_count=2) -> Dict:
+    async def validate_single_key(
+        session: aiohttp.ClientSession,
+        api_key: str,
+        retry_count=2,
+        model: Optional[str] = None
+    ) -> Dict:
         """
         Validate a single Claude API key with retry mechanism
         
@@ -46,14 +51,70 @@ class ClaudeKeyValidator:
             "Content-Type": "application/json"
         }
         
+        effective_model = model.strip() if model else ClaudeKeyValidator.TEST_PAYLOAD.get("model")
+        completion_payload = {
+            **ClaudeKeyValidator.TEST_PAYLOAD,
+            "model": effective_model
+        }
+
         result = {
             "key": api_key,
             "valid": False,
             "error_code": None,
-            "error_message": None
+            "error_message": None,
+            "selected_model": model,
+            "effective_model": None,
+            "validation_path": None
         }
+
+        if model:
+            result["validation_path"] = "completion"
+            result["effective_model"] = effective_model
+            try:
+                response = await session.post(
+                    ClaudeKeyValidator.BACKUP_API_URL,
+                    headers=headers,
+                    json=completion_payload,
+                    timeout=aiohttp.ClientTimeout(total=15)
+                )
+
+                status_code = response.status
+                if status_code in [200, 201]:
+                    result["valid"] = True
+                    result["error_code"] = None
+                    result["error_message"] = None
+                elif status_code == 401:
+                    result["valid"] = False
+                    result["error_code"] = "INVALID_KEY"
+                    result["error_message"] = "无效的API密钥"
+                elif status_code == 429:
+                    result["error_code"] = "RATE_LIMIT"
+                    result["error_message"] = "Claude API速率限制"
+                else:
+                    try:
+                        error_data = await response.json()
+                        result["error_code"] = f"HTTP_{status_code}"
+                        result["error_message"] = error_data.get("error", {}).get("message", f"HTTP错误: {status_code}")
+                    except Exception:
+                        result["error_code"] = f"HTTP_{status_code}"
+                        result["error_message"] = f"HTTP错误: {status_code}"
+            except aiohttp.ClientConnectorError as e:
+                result["error_code"] = "CONNECTION_ERROR"
+                result["error_message"] = f"连接错误: {str(e)}"
+            except aiohttp.ClientError as e:
+                result["error_code"] = "NETWORK_ERROR"
+                result["error_message"] = f"网络错误: {str(e)}"
+            except asyncio.TimeoutError:
+                result["error_code"] = "TIMEOUT"
+                result["error_message"] = "请求超时"
+            except Exception as e:
+                result["error_code"] = "UNKNOWN_ERROR"
+                result["error_message"] = f"未知错误: {str(e)}"
+            return result
         
         # 尝试主端点
+        result["validation_path"] = "models"
+        result["effective_model"] = "models-endpoint"
         for attempt in range(retry_count):
             try:
                 # 添加随机延迟避免请求过于集中
@@ -121,11 +182,13 @@ class ClaudeKeyValidator:
         # 如果主端点失败，尝试备用端点
         if not result["valid"] and result["error_code"] in ["CONNECTION_ERROR", "TIMEOUT"]:
             try:
+                result["validation_path"] = "completion"
+                result["effective_model"] = effective_model
                 # 使用POST请求验证
                 response = await session.post(
                     ClaudeKeyValidator.BACKUP_API_URL,
                     headers=headers,
-                    json=ClaudeKeyValidator.TEST_PAYLOAD,
+                    json=completion_payload,
                     timeout=aiohttp.ClientTimeout(total=15)
                 )
                 
@@ -154,7 +217,11 @@ class ClaudeKeyValidator:
         return result
     
     @staticmethod
-    async def validate_keys_batch(api_keys: List[str], batch_size: int = 3) -> List[Dict]:
+    async def validate_keys_batch(
+        api_keys: List[str],
+        batch_size: int = 3,
+        model: Optional[str] = None
+    ) -> List[Dict]:
         """
         Validate a batch of Claude API keys with concurrency control
         
@@ -194,7 +261,7 @@ class ClaudeKeyValidator:
                 
             # Process batch concurrently
             async with aiohttp.ClientSession(timeout=timeout, connector=connector) as session:
-                tasks = [ClaudeKeyValidator.validate_single_key(session, key) for key in batch]
+                tasks = [ClaudeKeyValidator.validate_single_key(session, key, model=model) for key in batch]
                 batch_results = await asyncio.gather(*tasks, return_exceptions=True)
                 
                 # 过滤掉可能的异常结果
@@ -206,7 +273,10 @@ class ClaudeKeyValidator:
                             "key": "unknown",
                             "valid": False,
                             "error_code": "EXCEPTION",
-                            "error_message": f"处理异常: {str(res)}"
+                            "error_message": f"处理异常: {str(res)}",
+                            "selected_model": model,
+                            "effective_model": None,
+                            "validation_path": None
                         })
                     else:
                         valid_results.append(res)

@@ -23,7 +23,7 @@ class KeyAnalyzer:
             "User-Agent": "MyAIcheck/1.0"
         }
     
-    async def analyze_key(self, api_key: str) -> Dict[str, Any]:
+    async def analyze_key(self, api_key: str, preferred_model: Optional[str] = None) -> Dict[str, Any]:
         """
         对API密钥进行全面分析
         
@@ -44,7 +44,9 @@ class KeyAnalyzer:
             "expiration": None,
             "organization": None,
             "capabilities": [],
-            "error": None
+            "error": None,
+            "selected_model": preferred_model,
+            "effective_model": None
         }
         
         # 检测API类型
@@ -58,11 +60,11 @@ class KeyAnalyzer:
         # 根据不同API类型执行分析
         try:
             if api_type == "OpenAI":
-                await self._analyze_openai_key(api_key, result)
+                await self._analyze_openai_key(api_key, result, preferred_model=preferred_model)
             elif api_type == "Claude":
-                await self._analyze_claude_key(api_key, result)
+                await self._analyze_claude_key(api_key, result, preferred_model=preferred_model)
             elif api_type == "Gemini":
-                await self._analyze_gemini_key(api_key, result)
+                await self._analyze_gemini_key(api_key, result, preferred_model=preferred_model)
             else:
                 # 对于其他类型，尝试通用验证
                 await self._analyze_generic_key(api_key, api_type, result)
@@ -72,7 +74,12 @@ class KeyAnalyzer:
             
         return result
     
-    async def _analyze_openai_key(self, api_key: str, result: Dict[str, Any]) -> None:
+    async def _analyze_openai_key(
+        self,
+        api_key: str,
+        result: Dict[str, Any],
+        preferred_model: Optional[str] = None
+    ) -> None:
         """分析OpenAI API密钥"""
         async with aiohttp.ClientSession(timeout=self.timeout) as session:
             # 检查模型列表
@@ -91,6 +98,8 @@ class KeyAnalyzer:
                         # 提取模型ID
                         if "data" in models_data:
                             result["models"] = [model["id"] for model in models_data["data"][:20]]
+                            if preferred_model:
+                                result["effective_model"] = preferred_model
                             
                             # 检测支持的功能
                             if any("gpt-4" in model for model in result["models"]):
@@ -113,6 +122,25 @@ class KeyAnalyzer:
             # 如果密钥有效，还要检查账户信息
             if result["valid"]:
                 try:
+                    if preferred_model:
+                        chat_url = "https://api.openai.com/v1/chat/completions"
+                        model_payload = {
+                            "model": preferred_model,
+                            "messages": [{"role": "user", "content": "Hello"}],
+                            "max_tokens": 1
+                        }
+                        async with session.post(chat_url, headers=headers, json=model_payload) as response:
+                            if response.status not in [200, 201]:
+                                if response.status == 404:
+                                    result["valid"] = False
+                                    result["error"] = f"模型不可用: {preferred_model}"
+                                elif response.status == 400:
+                                    data = await response.json()
+                                    message = data.get("error", {}).get("message", "")
+                                    if "model" in message.lower():
+                                        result["valid"] = False
+                                        result["error"] = f"模型不可用: {preferred_model}"
+
                     # 查看账单信息以估计配额
                     subscription_url = "https://api.openai.com/dashboard/billing/subscription"
                     async with session.get(subscription_url, headers=headers) as response:
@@ -127,7 +155,12 @@ class KeyAnalyzer:
                     # 无法获取账单信息不是关键错误
                     pass
     
-    async def _analyze_claude_key(self, api_key: str, result: Dict[str, Any]) -> None:
+    async def _analyze_claude_key(
+        self,
+        api_key: str,
+        result: Dict[str, Any],
+        preferred_model: Optional[str] = None
+    ) -> None:
         """分析Claude API密钥"""
         async with aiohttp.ClientSession(timeout=self.timeout) as session:
             # Claude没有专门的模型列表端点，使用消息端点测试
@@ -140,10 +173,11 @@ class KeyAnalyzer:
             
             # 最小测试消息
             payload = {
-                "model": "claude-3-haiku-20240307",
+                "model": preferred_model or "claude-3-haiku-20240307",
                 "max_tokens": 1,
                 "messages": [{"role": "user", "content": "Hello"}]
             }
+            result["effective_model"] = payload["model"]
             
             try:
                 async with session.post(messages_url, headers=headers, json=payload) as response:
@@ -160,6 +194,10 @@ class KeyAnalyzer:
                         # 有时400表示请求无效，但密钥可能有效
                         response_data = await response.json()
                         error_message = response_data.get("error", {}).get("message", "")
+                        if preferred_model and "model" in error_message.lower():
+                            result["error"] = f"模型不可用: {preferred_model}"
+                            result["valid"] = False
+                            return
                         
                         if "API key" in error_message and "invalid" in error_message:
                             result["error"] = "无效的API密钥"
@@ -179,10 +217,17 @@ class KeyAnalyzer:
             except Exception as e:
                 result["error"] = f"连接错误: {str(e)}"
     
-    async def _analyze_gemini_key(self, api_key: str, result: Dict[str, Any]) -> None:
+    async def _analyze_gemini_key(
+        self,
+        api_key: str,
+        result: Dict[str, Any],
+        preferred_model: Optional[str] = None
+    ) -> None:
         """分析Gemini API密钥"""
         # 不需要完整的ClientSession对象，因为Gemini使用密钥作为URL参数
-        base_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+        effective_model = preferred_model or "gemini-pro"
+        result["effective_model"] = effective_model
+        base_url = f"https://generativelanguage.googleapis.com/v1beta/models/{effective_model}:generateContent"
         request_url = f"{base_url}?key={api_key}"
         
         payload = {
@@ -201,6 +246,10 @@ class KeyAnalyzer:
                         # 检查错误细节，可能是无效密钥或其他问题
                         response_data = await response.json()
                         error = response_data.get("error", {})
+                        if preferred_model and "model" in (error.get("message", "")).lower():
+                            result["error"] = f"模型不可用: {preferred_model}"
+                            result["valid"] = False
+                            return
                         if error.get("status") == "INVALID_ARGUMENT":
                             # 可能是其他参数问题，密钥可能有效
                             result["valid"] = True

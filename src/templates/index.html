@@ -3046,11 +3046,54 @@
                     return document.getElementById('deepseek-model').value;
                 case 'xai':
                     return document.getElementById('xai-model').value;
-                case 'openai_like':
+                case 'openai_like': {
+                    const openaiLikeModelSelect = document.getElementById('openai_like-model');
+                    if (openaiLikeModelSelect &&
+                        openaiLikeModelSelect.value !== 'custom' &&
+                        openaiLikeModelSelect.value !== 'loading' &&
+                        openaiLikeModelSelect.value !== 'failed') {
+                        return openaiLikeModelSelect.value;
+                    }
                     return document.getElementById('custom-model-name').value.trim();
+                }
                 default:
                     return null;
             }
+        }
+
+        // 规范化模型值，过滤无效占位项
+        function normalizeSelectedModel(modelName) {
+            if (!modelName) return null;
+            const normalized = String(modelName).trim();
+            if (!normalized || normalized === 'loading' || normalized === 'failed') {
+                return null;
+            }
+            return normalized;
+        }
+
+        // 模型可用时优先走 completion 端点进行模型级校验
+        function shouldPreferCompletionValidation(apiType, modelName) {
+            const normalizedModel = normalizeSelectedModel(modelName);
+            if (!normalizedModel) return false;
+            return ['openai', 'claude', 'gemini', 'deepseek', 'xai', 'openai_like'].includes(apiType);
+        }
+
+        // 仅网络类错误允许降级重试其他验证路径
+        function isRetryableValidationError(errorCode) {
+            return ['NETWORK_ERROR', 'TIMEOUT', 'CONNECTION_ERROR', 'CONFIG_ERROR'].includes(errorCode);
+        }
+
+        // 运行时构造 completion URL，避免污染全局配置
+        function resolveCompletionUrl(apiType, modelName) {
+            const config = API_ENDPOINTS[apiType];
+            if (!config || !config.completions) return null;
+
+            if (apiType === 'gemini') {
+                const effectiveModel = normalizeSelectedModel(modelName) || 'gemini-2.5-pro';
+                return config.completions.replace('MODEL_NAME', encodeURIComponent(effectiveModel));
+            }
+
+            return config.completions;
         }
         
         // 获取自定义API配置
@@ -3177,12 +3220,6 @@
                     isValidating = false;
                     return;
                 }
-            }
-            
-            // 为Gemini设置带有选定模型的completions URL
-            if (currentApiType === 'gemini') {
-                const selectedModel = getSelectedModel();
-                API_ENDPOINTS.gemini.completions = API_ENDPOINTS.gemini.completions.replace('MODEL_NAME', selectedModel);
             }
             
             // 如果是文件输入，处理文件
@@ -3586,11 +3623,15 @@
         
         // 验证单个密钥（客户端）
         async function validateSingleKeyClientSide(key, apiType, modelName, signal) {
+            const normalizedModelName = normalizeSelectedModel(modelName);
             const result = {
                 key: key,
                 valid: false,
                 error_code: null,
-                error_message: null
+                error_message: null,
+                selected_model: normalizedModelName,
+                effective_model: null,
+                validation_path: null
             };
             
             // 选择端点
@@ -3599,6 +3640,16 @@
                 result.error_code = "CONFIG_ERROR";
                 result.error_message = "无效的API配置";
                 return result;
+            }
+
+            // 用户选择了具体模型时，优先做模型级 completion 校验
+            let completionAttempted = false;
+            if (shouldPreferCompletionValidation(apiType, normalizedModelName)) {
+                completionAttempted = true;
+                const completionResult = await validateWithCompletionEndpoint(key, apiType, normalizedModelName, signal);
+                if (completionResult.valid || !isRetryableValidationError(completionResult.error_code)) {
+                    return completionResult;
+                }
             }
             
             const endpoint = config.models;
@@ -3658,6 +3709,8 @@
                     // 使用传入的signal，并设置20秒超时
                     signal: signal ? signal : AbortSignal.timeout(20000) // 20秒超时
                 });
+                result.validation_path = 'models';
+                result.effective_model = 'models-endpoint';
                 
                 // 根据状态码确定有效性
                 if (response.ok) {
@@ -3674,26 +3727,41 @@
                     }
                 }
             } catch (error) {
-                // 如果主端点失败，尝试使用完成端点
-                try {
-                    const completionResult = await validateWithCompletionEndpoint(key, apiType, modelName, signal);
-                    return completionResult;
-                } catch (secondError) {
-                    result.error_code = 'NETWORK_ERROR';
-                    result.error_message = `网络错误: ${error.message || error.name || '未知错误'}`;
+                if (error.name === 'AbortError') {
+                    throw error;
                 }
+
+                // 模型优先路径尚未尝试时，再回退一次 completion
+                if (!completionAttempted) {
+                    const completionResult = await validateWithCompletionEndpoint(key, apiType, normalizedModelName, signal);
+                    if (completionResult.valid || !isRetryableValidationError(completionResult.error_code)) {
+                        return completionResult;
+                    }
+                    result.error_code = completionResult.error_code || 'NETWORK_ERROR';
+                    result.error_message = completionResult.error_message || `网络错误: ${error.message || error.name || '未知错误'}`;
+                    result.validation_path = completionResult.validation_path || result.validation_path;
+                    result.effective_model = completionResult.effective_model || result.effective_model;
+                    return result;
+                }
+
+                result.error_code = 'NETWORK_ERROR';
+                result.error_message = `网络错误: ${error.message || error.name || '未知错误'}`;
             }
             
             return result;
         }
         
-        // 使用完成端点进行验证（备用方法）
+        // 使用 completion 端点进行模型级验证
         async function validateWithCompletionEndpoint(key, apiType, modelName, signal) {
+            const normalizedModelName = normalizeSelectedModel(modelName);
             const result = {
                 key: key,
                 valid: false,
                 error_code: null,
-                error_message: null
+                error_message: null,
+                selected_model: normalizedModelName,
+                effective_model: normalizedModelName,
+                validation_path: 'completion'
             };
             
             // 获取配置
@@ -3737,12 +3805,20 @@
             
             try {
                 // 使用fetch进行API调用
-                let url = config.completions;
+                let url = resolveCompletionUrl(apiType, normalizedModelName);
+                if (!url) {
+                    result.error_code = "CONFIG_ERROR";
+                    result.error_message = "无效的API配置";
+                    return result;
+                }
                 if (apiType === 'gemini') {
                     url = `${url}?key=${key}`;
                 }
                 
-                const payload = config.payload(modelName);
+                const payload = config.payload(normalizedModelName);
+                if (!result.effective_model && payload?.model) {
+                    result.effective_model = payload.model;
+                }
                 
                 const response = await fetch(url, {
                     method: 'POST',

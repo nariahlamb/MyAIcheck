@@ -30,7 +30,12 @@ class OpenAIKeyValidator:
     }
     
     @staticmethod
-    async def validate_single_key(session: aiohttp.ClientSession, api_key: str, retry_count=3) -> Dict:
+    async def validate_single_key(
+        session: aiohttp.ClientSession,
+        api_key: str,
+        retry_count=3,
+        model: Optional[str] = None
+    ) -> Dict:
         """
         Validate a single OpenAI API key with retry mechanism and multiple endpoints
         
@@ -47,15 +52,27 @@ class OpenAIKeyValidator:
             "Content-Type": "application/json"
         }
         
+        effective_model = model.strip() if model else OpenAIKeyValidator.COMPLETIONS_PAYLOAD.get("model")
+        completions_payload = {
+            **OpenAIKeyValidator.COMPLETIONS_PAYLOAD,
+            "model": effective_model
+        }
+
         result = {
             "key": api_key,
             "valid": False,
             "error_code": None,
-            "error_message": None
+            "error_message": None,
+            "selected_model": model,
+            "effective_model": None,
+            "validation_path": None
         }
         
         # 尝试所有API端点
         endpoints = [OpenAIKeyValidator.PRIMARY_API_URL] + OpenAIKeyValidator.BACKUP_API_URLS
+        if model:
+            # 模型指定时优先使用 completion 端点进行模型级校验
+            endpoints = [endpoint for endpoint in endpoints if "completions" in endpoint]
         
         for endpoint_index, endpoint in enumerate(endpoints):
             # 只有主端点失败时才尝试备用端点
@@ -64,6 +81,8 @@ class OpenAIKeyValidator:
                 
             # 如果切换到完成端点，需要使用POST请求
             is_completions_endpoint = "completions" in endpoint
+            result["validation_path"] = "completion" if is_completions_endpoint else "models"
+            result["effective_model"] = effective_model if is_completions_endpoint else "models-endpoint"
                 
             for attempt in range(retry_count):
                 try:
@@ -76,7 +95,7 @@ class OpenAIKeyValidator:
                         response = await session.post(
                             endpoint, 
                             headers=headers, 
-                            json=OpenAIKeyValidator.COMPLETIONS_PAYLOAD,
+                            json=completions_payload,
                             timeout=aiohttp.ClientTimeout(total=15)
                         )
                     else:
@@ -165,7 +184,11 @@ class OpenAIKeyValidator:
         return result
     
     @staticmethod
-    async def validate_keys_batch(api_keys: List[str], batch_size: int = 3) -> List[Dict]:
+    async def validate_keys_batch(
+        api_keys: List[str],
+        batch_size: int = 3,
+        model: Optional[str] = None
+    ) -> List[Dict]:
         """
         Validate a batch of OpenAI API keys with concurrency control
         
@@ -205,7 +228,7 @@ class OpenAIKeyValidator:
                 
             # Process batch concurrently
             async with aiohttp.ClientSession(timeout=timeout, connector=connector) as session:
-                tasks = [OpenAIKeyValidator.validate_single_key(session, key) for key in batch]
+                tasks = [OpenAIKeyValidator.validate_single_key(session, key, model=model) for key in batch]
                 batch_results = await asyncio.gather(*tasks, return_exceptions=True)
                 
                 # 过滤掉可能的异常结果
@@ -217,7 +240,10 @@ class OpenAIKeyValidator:
                             "key": "unknown",
                             "valid": False,
                             "error_code": "EXCEPTION",
-                            "error_message": f"处理异常: {str(res)}"
+                            "error_message": f"处理异常: {str(res)}",
+                            "selected_model": model,
+                            "effective_model": None,
+                            "validation_path": None
                         })
                     else:
                         valid_results.append(res)

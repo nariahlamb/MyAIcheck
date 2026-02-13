@@ -108,6 +108,14 @@
                             </label>
                         </div>
                     </div>
+
+                    <div class="mb-3">
+                        <label for="preferredModel" class="form-label">指定模型（可选）</label>
+                        <input type="text" class="form-control" id="preferredModel" placeholder="例如: gpt-4.1 / claude-3-5-sonnet-20240620 / gemini-2.5-pro">
+                        <div class="form-text">
+                            填写后将优先按该模型进行验证，便于排查“所选模型与实际检测模型不一致”问题。
+                        </div>
+                    </div>
                     
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary" id="analyzeBtn">
@@ -141,6 +149,14 @@
                                 <tr>
                                     <th>支持的能力</th>
                                     <td id="result-capabilities">-</td>
+                                </tr>
+                                <tr>
+                                    <th>请求模型</th>
+                                    <td id="result-selected-model">-</td>
+                                </tr>
+                                <tr>
+                                    <th>实际检测模型</th>
+                                    <td id="result-effective-model">-</td>
                                 </tr>
                                 <tr>
                                     <th>配额信息</th>

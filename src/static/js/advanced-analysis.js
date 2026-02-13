@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const checkModels = document.getElementById('checkModels').checked;
         const checkQuota = document.getElementById('checkQuota').checked;
         const checkPerformance = document.getElementById('checkPerformance').checked;
+        const preferredModelInput = document.getElementById('preferredModel');
+        const preferredModel = preferredModelInput ? preferredModelInput.value.trim() : '';
         
         if (!apiKey) {
             showError('请输入API密钥');
@@ -56,7 +58,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 api_key: apiKey,
                 check_models: checkModels,
                 check_quota: checkQuota,
-                check_performance: checkPerformance
+                check_performance: checkPerformance,
+                model: preferredModel || null
             })
         })
         .then(response => response.json())
@@ -83,6 +86,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const apiType = document.getElementById('result-api-type').textContent;
         const status = document.getElementById('result-status').textContent;
         const capabilities = document.getElementById('result-capabilities').textContent;
+        const selectedModel = document.getElementById('result-selected-model').textContent;
+        const effectiveModel = document.getElementById('result-effective-model').textContent;
         const quota = document.getElementById('result-quota').textContent;
         const expiry = document.getElementById('result-expiry').textContent;
         
@@ -91,6 +96,8 @@ document.addEventListener('DOMContentLoaded', function() {
         text += `API类型: ${apiType}\n`;
         text += `状态: ${status}\n`;
         text += `支持的能力: ${capabilities}\n`;
+        text += `请求模型: ${selectedModel}\n`;
+        text += `实际检测模型: ${effectiveModel}\n`;
         text += `配额信息: ${quota}\n`;
         text += `到期时间: ${expiry}\n\n`;
         
@@ -167,6 +174,10 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             capabilitiesElement.textContent = '未检测到';
         }
+
+        // 显示模型对齐信息
+        document.getElementById('result-selected-model').textContent = result.selected_model || '未指定';
+        document.getElementById('result-effective-model').textContent = result.effective_model || '未提供';
         
         // 显示配额信息
         document.getElementById('result-quota').textContent = result.quota || '未检测到';
